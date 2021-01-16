@@ -4,4 +4,4 @@ bp = Blueprint('api', __name__)
 
 @bp.route('/')
 def index():
-     return "Back-end cho toptimviec"
+     return "Back-end for toptimviec"

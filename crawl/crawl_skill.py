@@ -1,10 +1,11 @@
-from selenium import webdriver
-from selenium.webdriver.common.by import By
+import requests
+from bs4 import BeautifulSoup
 from controller import db
 
-driver = webdriver.Chrome(r"C:\Users\hvhai\Downloads\chromedriver_win32\chromedriver.exe")
-driver.get("https://itviec.com/jobs-skill-index")
-list_skill=driver.find_element(By.XPATH, ".//ul[@class='skill-tag__list']").find_elements_by_tag_name("a")
+req=requests.get("https://itviec.com/jobs-skill-index")
+soup=BeautifulSoup(req.text, "html.parser")
+
+list_skill=soup.find("ul", {"class": "skill-tag__list"}).find_all("a")
 
 for skill in list_skill:
     print(skill.text.strip())

@@ -9,8 +9,8 @@ list_skill=soup.find("ul", {"class": "skill-tag__list"}).find_all("a")
 
 for skill in list_skill:
     print(skill.text.strip())
-    db.hashtag.insert_one({"name": skill.text.strip()})
+    db.hashtag.update_one({"name": skill.text.strip()}, {"$set": {"name": skill.text.strip()}}, upsert=True)
 
-db.hashtag.insert_one({"name": "Intern"})
-db.hashtag.insert_one({"name": "Junior"})
-db.hashtag.insert_one({"name": "Senior"})
+db.hashtag.update_one({"name": "Intern"}, {"$set": {"name": "Intern"}}, upsert=True)
+db.hashtag.update_one({"name": "Junior"}, {"$set": {"name": "Junior"}}, upsert=True)
+db.hashtag.update_one({"name": "Senior"}, {"$set": {"name": "Senior"}}, upsert=True)

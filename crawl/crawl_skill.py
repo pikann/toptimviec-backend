@@ -12,5 +12,6 @@ for skill in list_skill:
     db.hashtag.update_one({"name": skill.text.strip()}, {"$set": {"name": skill.text.strip()}}, upsert=True)
 
 db.hashtag.update_one({"name": "Intern"}, {"$set": {"name": "Intern"}}, upsert=True)
+db.hashtag.update_one({"name": "Fresher"}, {"$set": {"name": "Fresher"}}, upsert=True)
 db.hashtag.update_one({"name": "Junior"}, {"$set": {"name": "Junior"}}, upsert=True)
 db.hashtag.update_one({"name": "Senior"}, {"$set": {"name": "Senior"}}, upsert=True)

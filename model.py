@@ -15,6 +15,7 @@ class Post:
             self.salary = ""
             self.deadline = datetime.datetime.now()
             self.url = ""
+            self.hashtag = []
         else:
             self._id = dict["_id"]
             self.title = dict["title"]
@@ -26,6 +27,10 @@ class Post:
             self.salary = dict["salary"]
             self.deadline = dict["deadline"]
             self.url = dict["url"]
+            self.hashtag = dict["hashtag"]
+
+    def id(self):
+        return self._id
 
 
 class Employer:
@@ -42,3 +47,6 @@ class Employer:
             self.bio = dict["bio"]
             self.avatar = dict["avatar"]
             self.url = dict["url"]
+
+    def id(self):
+        return self._id

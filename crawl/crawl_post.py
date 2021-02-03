@@ -97,6 +97,11 @@ def crawl_post(url, place):
 
     post.place = place
 
+    try:
+        post.address = driver.find_element(By.XPATH, "//div[@id='row-job-title']").find_element(By.XPATH, "//div[@class='text-dark-gray']").text.strip()
+    except:
+        pass
+
     employer_url = driver.find_element(By.XPATH,
                                        "//div[@class='company-logo-wraper text-center']").find_element_by_tag_name(
         "a").get_attribute("href")
@@ -177,6 +182,11 @@ def crawl_post_brand(url, place):
         return
 
     post.salary = driver.find_element(By.XPATH, "//span[@data-original-title='Mức lương']").text.strip()
+
+    try:
+        post.address = driver.find_element(By.XPATH, "//span[@data-original-title='Địa chỉ làm việc']").text.strip()
+    except:
+        pass
 
     post.place = place
 

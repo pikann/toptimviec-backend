@@ -53,6 +53,9 @@ class Employer:
     def id(self):
         return self._id
 
+    def setID(self, i):
+        self._id=i
+
 
 class Applicant:
     def __init__(self, dict=None):
@@ -80,6 +83,9 @@ class Applicant:
     def id(self):
         return self._id
 
+    def setID(self, i):
+        self._id=i
+
 
 class CV:
     def __init__(self, dict=None):
@@ -91,6 +97,25 @@ class CV:
             self._id = dict["_id"]
             self.url = dict["url"]
             self.hashtag = dict["hashtag"]
+
+    def id(self):
+        return self._id
+
+
+class User:
+    def __init__(self, dict=None):
+        if dict is None:
+            self._id = ObjectId()
+            self.email = ""
+            self.password = ""
+            self.role = ""
+            self.validate = ""
+        else:
+            self._id = dict["_id"]
+            self.email = dict["email"]
+            self.password = dict["password"]
+            self.role = dict["role"]
+            self.validate = dict["validate"]
 
     def id(self):
         return self._id

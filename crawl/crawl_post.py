@@ -5,6 +5,8 @@ from model import Post, Employer
 from controller import db
 import json
 import datetime
+import cloudinary
+from cloudinary import uploader
 
 chrome_options = webdriver.ChromeOptions()
 chrome_options.add_argument('headless')
@@ -15,6 +17,18 @@ driver = webdriver.Chrome("C:/Users/hvhai/Downloads/chromedriver_win32/chromedri
 
 list_hashtag = [d["name"] for d in list(db.hashtag.find({}, {"_id": 0, "name": 1}))]
 list_place = [p["name"] for p in list(db.place.find({}, {"_id": 0, "name": 1}))]
+
+with open("cloudinary_api.json") as json_file:
+    api = json.load(json_file)
+    cloud_name = api["cloud_name"]
+    api_key = api["api_key"]
+    api_secret = api["api_secret"]
+
+cloudinary.config(
+    cloud_name=cloud_name,
+    api_key=api_key,
+    api_secret=api_secret
+)
 
 
 def crawl_employer(url):
@@ -33,9 +47,10 @@ def crawl_employer(url):
                                         "//h1[@class='company-detail-name text-highlight']").text.strip()
     employer.bio = driver.find_element(By.XPATH,
                                        "//div[@class='box box-white']").text
-    employer.avatar = driver.find_element(By.XPATH,
-                                          "//div[@id='company-logo']").find_element_by_tag_name("img").get_attribute(
+    avatar = driver.find_element(By.XPATH,
+                                 "//div[@id='company-logo']").find_element_by_tag_name("img").get_attribute(
         "src")
+    employer.avatar = uploader.upload(avatar, folder="toptimviec")["url"]
     db.employer.insert_one(employer.__dict__)
     return employer.id()
 
@@ -98,7 +113,8 @@ def crawl_post(url, place):
     post.place = place
 
     try:
-        post.address = driver.find_element(By.XPATH, "//div[@id='row-job-title']").find_element(By.XPATH, "//div[@class='text-dark-gray']").text.strip()
+        post.address = driver.find_element(By.XPATH, "//div[@id='row-job-title']").find_element(By.XPATH,
+                                                                                                "//div[@class='text-dark-gray']").text.strip()
     except:
         pass
 
@@ -129,9 +145,10 @@ def crawl_employer_brand(url):
                                         "//div[@id='company-name']").find_element_by_tag_name("h1").text.strip()
     employer.bio = driver.find_element(By.XPATH,
                                        "//div[@class='intro-content']").text.strip()
-    employer.avatar = driver.find_element(By.XPATH,
-                                          "//div[@id='company-logo']").find_element_by_tag_name("img").get_attribute(
+    avatar = driver.find_element(By.XPATH,
+                                 "//div[@id='company-logo']").find_element_by_tag_name("img").get_attribute(
         "src")
+    employer.avatar = uploader.upload(avatar, folder="toptimviec")["url"]
     db.employer.insert_one(employer.__dict__)
     return employer.id()
 
@@ -182,6 +199,10 @@ def crawl_post_brand(url, place):
         return
 
     post.salary = driver.find_element(By.XPATH, "//span[@data-original-title='Mức lương']").text.strip()
+    try:
+        post.deadline = datetime.datetime.strptime(driver.find_element(By.XPATH, "//span[@data-original-title='Hạn ứng tuyển']").text.strip(), '%d/%m/%Y')
+    except:
+        pass
 
     try:
         post.address = driver.find_element(By.XPATH, "//span[@data-original-title='Địa chỉ làm việc']").text.strip()

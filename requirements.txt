@@ -9,3 +9,4 @@ selenium~=3.141.0
 cloudinary~=1.24.0
 yagmail~=0.14.245
 keyring~=22.0.1
+dnspython~=2.1.0

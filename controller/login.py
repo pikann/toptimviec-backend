@@ -11,11 +11,11 @@ def login():
         user = db.user.find_one({"_id": token.id_user}, {"_id": 0, "role": 1})
         if user["role"] == "applicant":
             applicant = db.applicant.find_one({"_id": token.id_user}, {"_id": 0, "name": 1, "avatar": 1})
-            return {"token": token.show_token(), "_id": str(token.id_user), "role": user["role"],
+            return {"token": token.show_token(), "id_user": str(token.id_user), "role": user["role"],
                     "name": applicant["name"], "avatar": applicant["avatar"]}
         if user["role"] == "employer":
             employer = db.employer.find_one({"_id": token.id_user}, {"_id": 0, "name": 1, "avatar": 1})
-            return {"token": token.show_token(), "_id": str(token.id_user), "role": user["role"],
+            return {"token": token.show_token(), "id_user": str(token.id_user), "role": user["role"],
                     "name": employer["name"], "avatar": employer["avatar"]}
         abort(401)
     except:

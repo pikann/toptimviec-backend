@@ -12,6 +12,7 @@ from controller.employer import *
 from controller.validate import *
 from controller.login import *
 from controller.forget_password import *
+from controller.post import *
 
 @bp.route('/')
 def index():

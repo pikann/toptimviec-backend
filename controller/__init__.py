@@ -10,6 +10,7 @@ yag = yagmail.SMTP(user='toptimviec@gmail.com', password='TopTimViec1')
 from controller.applicant import *
 from controller.employer import *
 from controller.validate import *
+from controller.login import *
 
 @bp.route('/')
 def index():

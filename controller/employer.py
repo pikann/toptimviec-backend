@@ -35,4 +35,4 @@ def post_employer():
     except:
         abort(400)
 
-    return "ok"
+    return "ok", 201

@@ -38,4 +38,4 @@ def post_applicant():
     except:
         abort(403)
 
-    return "ok"
+    return "ok", 201

@@ -21,7 +21,7 @@ def verify_password(username, password):
     if user is None:
         return False
     if user["validate"]!="":
-        abort(409)
+        abort(405)
     g.current_token = Token(user['_id'])
     return True
 

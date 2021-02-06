@@ -14,8 +14,11 @@ def forget_password():
         abort(400)
     try:
         user=db.user.find_one({"email": rq["email"]})
-        if user is None:
-            abort(403)
+    except:
+        abort(403)
+    if user is None:
+        abort(401)
+    try:
         forget_key={"id_user": user["_id"],
                     "key": base64.b64encode(os.urandom(24)).decode('utf-8'),
                     "expiration": datetime.datetime.utcnow()+datetime.timedelta(seconds=3600)}

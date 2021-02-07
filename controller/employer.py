@@ -6,11 +6,15 @@ from model import User, Employer
 import hashlib
 from controller import bp, db, yag
 import datetime
+import re
 
 @bp.route("/employer", methods=['POST'])
 def post_employer():
     rq=request.json
     if not rq or not 'email' in rq or not 'password' in rq or not "name" in rq:
+        abort(400)
+
+    if not re.match(r"[-a-zA-Z0-9.`?{}]+@\w+\.\w+", rq["email"]):
         abort(400)
 
     if db.user.find_one({"email": rq["email"]}) is not None:

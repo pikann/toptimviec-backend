@@ -94,3 +94,29 @@ def get_list_post():
         return {"list_post": list_post}
     except:
         abort(403)
+
+
+@bp.route('/post/<id>', methods=['GET'])
+@token_auth.login_required(optional=True)
+def get_post(id):
+    try:
+        post = list(db.post.aggregate([{"$match": {"_id": ObjectId(id)}},
+                                       {"$lookup": {
+                                           "from": "employer",
+                                           "localField": "employer",
+                                           "foreignField": "_id",
+                                           "as": "employer"
+                                       }},
+                                       {"$unwind": "$employer"},
+                                       {"$project": {
+                                           "url": 0,
+                                           "employer.url": 0,
+                                           "employer.bio": 0
+                                       }},
+                                       {"$set": {
+                                           "employer._id": {"$toString": "$employer._id"},
+                                           "_id": {"$toString": "$_id"}
+                                       }}]))
+        return {"post": post[0]}
+    except:
+        abort(403)

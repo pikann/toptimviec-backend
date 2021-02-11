@@ -1,7 +1,9 @@
 from flask import g, abort, request
-from controller import bp, db
+from controller import bp, db, list_hashtag, list_place
 from controller.auth import token_auth
 from bson.objectid import ObjectId
+import datetime
+from model import Post
 
 
 @bp.route('/post', methods=['GET'])
@@ -13,7 +15,8 @@ def get_list_post():
     try:
         list_showed = [ObjectId(id_seen) for id_seen in rq["list_id_showed"]]
 
-        db_request = [{"$match": {"_id": {"$not": {"$in": list_showed}}}}]
+        db_request = [{"$match": {"_id": {"$not": {"$in": list_showed}}}},
+                      {"$match": {"deadline": {"$gt": datetime.datetime.utcnow()}}}]
         if rq["place"] != "":
             db_request += [{"$match": {"place": rq["place"]}}]
         if len(rq["list_hashtag"]) > 0:
@@ -120,3 +123,47 @@ def get_post(id):
         return {"post": post[0]}
     except:
         abort(403)
+
+
+@bp.route('/post', methods=['POST'])
+@token_auth.login_required(role="employer")
+def post_post():
+    token = g.current_token.get_token()
+    rq = request.json
+    if not rq or not 'title' in rq or not 'description' in rq or not 'request' in rq or \
+            not 'benefit' in rq or not 'place' in rq or not 'salary' in rq or \
+            not 'deadline' in rq or not 'hashtag' in rq or not 'address' in rq:
+        abort(400)
+    if rq["title"].__class__ != str or rq["description"].__class__ != str or rq["request"].__class__ != str or rq[
+        "benefit"].__class__ != str or rq["place"].__class__ != list or rq["salary"].__class__ != str or rq[
+        "deadline"].__class__ != str or rq["hashtag"].__class__ != list or rq["address"].__class__ != str:
+        abort(400)
+    hashtag = [h for h in rq["hashtag"] if h in list_hashtag]
+    place = [p for p in rq["place"] if p in list_place]
+
+    if len(hashtag) == 0:
+        abort(400)
+
+    if len(place) == 0:
+        abort(400)
+
+    post = Post()
+    post.title = rq["title"]
+    post.description = rq["description"]
+    post.request = rq["request"]
+    post.benefit = rq["benefit"]
+    post.place = place
+    post.salary = rq["salary"]
+    try:
+        post.deadline = datetime.datetime.strptime(rq["deadline"], '%d/%m/%Y')
+    except:
+        abort(400)
+    post.hashtag = hashtag
+    post.address = rq["address"]
+    post.employer = token.id_user
+
+    try:
+        db.post.insert_one(post.__dict__)
+    except:
+        abort(403)
+    return {"id_post": str(post.id())}

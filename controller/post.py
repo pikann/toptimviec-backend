@@ -120,9 +120,11 @@ def get_post(id):
                                            "employer._id": {"$toString": "$employer._id"},
                                            "_id": {"$toString": "$_id"}
                                        }}]))
-        return {"post": post[0]}
     except:
         abort(403)
+    if len(post)==0:
+        abort(404)
+    return {"post": post[0]}
 
 
 @bp.route('/post', methods=['POST'])
@@ -167,3 +169,77 @@ def post_post():
     except:
         abort(403)
     return {"id_post": str(post.id())}
+
+
+@bp.route('/post/<id>', methods=['PUT'])
+@token_auth.login_required()
+def put_post(id):
+    token = g.current_token.get_token()
+    try:
+        db_post=db.post.find_one({"_id": ObjectId(id)})
+    except:
+        abort(403)
+
+    if db_post is None:
+        abort(404)
+
+    if db_post["employer"]!=token.id_user:
+        abort(401)
+
+    rq = request.json
+    if not rq or not 'title' in rq or not 'description' in rq or not 'request' in rq or \
+            not 'benefit' in rq or not 'place' in rq or not 'salary' in rq or \
+            not 'deadline' in rq or not 'hashtag' in rq or not 'address' in rq:
+        abort(400)
+    if rq["title"].__class__ != str or rq["description"].__class__ != str or rq["request"].__class__ != str or rq[
+        "benefit"].__class__ != str or rq["place"].__class__ != list or rq["salary"].__class__ != str or rq[
+        "deadline"].__class__ != str or rq["hashtag"].__class__ != list or rq["address"].__class__ != str:
+        abort(400)
+    hashtag = [h for h in rq["hashtag"] if h in list_hashtag]
+    place = [p for p in rq["place"] if p in list_place]
+
+    if len(hashtag) == 0:
+        abort(400)
+
+    if len(place) == 0:
+        abort(400)
+
+    post = Post(db_post)
+    post.title = rq["title"]
+    post.description = rq["description"]
+    post.request = rq["request"]
+    post.benefit = rq["benefit"]
+    post.place = place
+    post.salary = rq["salary"]
+    try:
+        post.deadline = datetime.datetime.strptime(rq["deadline"], '%d/%m/%Y')
+    except:
+        abort(400)
+    post.hashtag = hashtag
+    post.address = rq["address"]
+
+    try:
+        db.post.update_one({"_id": ObjectId(id)}, {"$set": post.__dict__})
+    except:
+        abort(403)
+
+    return "ok"
+
+
+@bp.route('/post/<id>', methods=['DELETE'])
+@token_auth.login_required()
+def delete_post(id):
+    token = g.current_token.get_token()
+    try:
+        db_post = db.post.find_one({"_id": ObjectId(id)}, {"_id": 0, "employer": 1})
+    except:
+        abort(403)
+
+    if db_post is None:
+        abort(404)
+
+    if db_post["employer"] != token.id_user:
+        abort(401)
+
+    db.post.delete_one({"_id": ObjectId(id)})
+    return "ok"

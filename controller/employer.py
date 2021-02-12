@@ -7,10 +7,12 @@ import hashlib
 from controller import bp, db, yag
 import datetime
 import re
+from bson.objectid import ObjectId
+
 
 @bp.route("/employer", methods=['POST'])
 def post_employer():
-    rq=request.json
+    rq = request.json
     if not rq or not 'email' in rq or not 'password' in rq or not "name" in rq:
         abort(400)
 
@@ -21,22 +23,70 @@ def post_employer():
         abort(409)
 
     try:
-        user=User()
-        employer=Employer()
+        user = User()
+        employer = Employer()
         employer.setID(user.id())
-        user.email=rq['email']
-        user.password=hashlib.md5(rq['password'].encode('utf-8')).hexdigest()
-        user.role="employer"
-        employer.name=rq['name']
+        user.email = rq['email']
+        user.password = hashlib.md5(rq['password'].encode('utf-8')).hexdigest()
+        user.role = "employer"
+        employer.name = rq['name']
 
         user.validate = base64.b64encode(os.urandom(24)).decode('utf-8')
 
         db.user.insert_one(user.__dict__)
         db.employer.insert_one(employer.__dict__)
 
-        mail_content="Chào "+employer.name+",\nTài khoản của bạn đã được khởi tạo thành công.\nXin vui lòng nhấn vào link bên dưới để hoàn tất việc đăng ký.\n"+str(user.id())+"\n"+user.validate
+        mail_content = "Chào " + employer.name + ",\nTài khoản của bạn đã được khởi tạo thành công.\nXin vui lòng nhấn vào link bên dưới để hoàn tất việc đăng ký.\n" + str(
+            user.id()) + "\n" + user.validate
         yag.send(to=user.email, subject="Xác nhận tài khoản TopTimViec", contents=mail_content)
     except:
         abort(400)
 
     return "ok", 201
+
+
+@bp.route("/employer/<id>", methods=['GET'])
+def get_employer(id):
+    try:
+        employer = db.employer.find_one({"_id": ObjectId(id)}, {"_id": 0, "name": 1, "bio": 1, "avatar": 1})
+    except:
+        abort(403)
+    return employer
+
+
+@bp.route("/employer/<id>/post", methods=['GET'])
+def get_post_employer(id):
+    rq = request.json
+    if not rq or not 'list_id_showed' in rq:
+        abort(400)
+    try:
+        list_showed = [ObjectId(id_seen) for id_seen in rq["list_id_showed"]]
+        list_post = list(db.post.aggregate([{"$match": {"_id": {"$not": {"$in": list_showed}}}},
+                                            {"$match": {"employer": ObjectId(id)}},
+                                            {"$sort": {"_id": -1}},
+                                            {"$limit": 20},
+                                            {"$project": {
+                                                "_id": {"$toString": "$_id"},
+                                                "title": 1,
+                                                "employer": 1,
+                                                "place": 1,
+                                                "hashtag": 1,
+                                                "salary": 1
+                                            }},
+                                            {"$lookup": {
+                                                "from": "employer",
+                                                "localField": "employer",
+                                                "foreignField": "_id",
+                                                "as": "employer"
+                                            }},
+                                            {"$unwind": "$employer"},
+                                            {"$project": {
+                                                "employer.bio": 0,
+                                                "employer.url": 0
+                                            }},
+                                            {"$set": {
+                                                "employer._id": {"$toString": "$employer._id"}
+                                            }}]))
+        return {"list_post": list_post}
+    except:
+        abort(403)

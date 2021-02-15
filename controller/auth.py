@@ -2,7 +2,7 @@ from flask_httpauth import HTTPBasicAuth, HTTPTokenAuth
 from flask import abort, g, request
 import hashlib
 from controller import db
-from model import Token
+from model import Token, RefreshToken
 
 basic_auth = HTTPBasicAuth()
 token_auth = HTTPTokenAuth()
@@ -22,7 +22,10 @@ def verify_password(username, password):
         return False
     if user["validate"]!="":
         abort(405)
-    g.current_token = Token(user['_id'])
+    refreshToken=RefreshToken(user["_id"], user["role"])
+    db.refresh_token.insert_one(refreshToken.__dict__)
+    g.refresh_token = refreshToken
+    g.current_token = Token(refreshToken.id_user, refreshToken.role, refreshToken.id())
     return True
 
 
@@ -32,8 +35,8 @@ def basic_auth_error():
 
 
 @token_auth.verify_token
-def verify_token(id_token):
-    g.current_token = Token.check_token(id_token) if id_token else None
+def verify_token(key):
+    g.current_token = Token.check_token(key) if key else None
     return g.current_token is not None
 
 
@@ -44,5 +47,5 @@ def token_auth_error():
 
 @token_auth.get_user_roles
 def get_user_roles(user):
-    token = g.current_token.get_token()
-    return db.user.find_one({"_id": token.id_user}, {"_id": 0, "role": 1})["role"]
+    token = g.current_token
+    return token.role

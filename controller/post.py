@@ -3,7 +3,7 @@ from controller import bp, db, list_hashtag, list_place
 from controller.auth import token_auth
 from bson.objectid import ObjectId
 import datetime
-from model import Post
+from model import Post, Token
 
 
 @bp.route('/post', methods=['GET'])
@@ -130,7 +130,7 @@ def get_post(id):
 @bp.route('/post', methods=['POST'])
 @token_auth.login_required(role="employer")
 def post_post():
-    token = g.current_token.get_token()
+    token = g.current_token
     rq = request.json
     if not rq or not 'title' in rq or not 'description' in rq or not 'request' in rq or \
             not 'benefit' in rq or not 'place' in rq or not 'salary' in rq or \
@@ -174,7 +174,7 @@ def post_post():
 @bp.route('/post/<id>', methods=['PUT'])
 @token_auth.login_required()
 def put_post(id):
-    token = g.current_token.get_token()
+    token = g.current_token
     try:
         db_post=db.post.find_one({"_id": ObjectId(id)})
     except:
@@ -229,7 +229,7 @@ def put_post(id):
 @bp.route('/post/<id>', methods=['DELETE'])
 @token_auth.login_required()
 def delete_post(id):
-    token = g.current_token.get_token()
+    token = g.current_token
     try:
         db_post = db.post.find_one({"_id": ObjectId(id)}, {"_id": 0, "employer": 1})
     except:

@@ -3,7 +3,10 @@ import os
 
 from bson.objectid import ObjectId
 import datetime
+import jwt
 from controller import db
+
+SECRET_KEY=b'h\xc9k\xda1\xb9\xc1\xee\xa0\x0cA\xbb\xeb\xb6\x81v\\\xee\xd0\xdc<FT\x18'
 
 
 class Post:
@@ -126,37 +129,58 @@ class User:
 
 
 class Token():
-    def __init__(self, id_user):
-        self._id = ""
-        self.token_expiration = datetime.datetime.utcnow() - datetime.timedelta(seconds=1)
+    def __init__(self, id_user, role, refresh, token_expiration=datetime.datetime.utcnow() + datetime.timedelta(minutes=10)):
+        self.token_expiration = token_expiration
         self.id_user = id_user
+        self.role = role
+        self.refreshToken = refresh
 
-    def get_token(self, expires_in=3600):
-        now = datetime.datetime.utcnow()
-        if self._id and self.token_expiration > now + datetime.timedelta(seconds=60):
-            return self
-        self._id = base64.b64encode(os.urandom(24)).decode('utf-8')
-        self.token_expiration = now + datetime.timedelta(seconds=expires_in)
-        db.session.insert_one(self.__dict__)
-        return self
+    def encode(self):
+        try:
+            payload = {
+                'exp': self.token_expiration,
+                'sub': {"id_user": str(self.id_user), "role": self.role},
+                'iss': str(self.refreshToken)
+            }
+            return jwt.encode(payload, SECRET_KEY, algorithm='HS256')
+        except:
+            return None
+
+    @staticmethod
+    def decode(token):
+        try:
+            payload = jwt.decode(token, SECRET_KEY)
+            token_obj=Token(ObjectId(payload['sub']["id_user"]), payload['sub']["role"], ObjectId(payload['iss']), datetime.datetime.fromtimestamp(payload['exp']))
+            return token_obj
+        except:
+            return None
 
     def revoke_token(self):
-        self.token_expiration = datetime.datetime.utcnow() - datetime.timedelta(seconds=1)
-        e = db.session.update_one({"_id": self._id}, {"$set": {"token_expiration": self.token_expiration}})
+        token_expiration = datetime.datetime.utcnow() - datetime.timedelta(seconds=1)
+        e = db.refresh_token.update_one({"_id": self.refreshToken}, {"$set": {"token_expiration": token_expiration}})
         if e.matched_count > 0:
             return "ok"
         else:
             return "error"
 
     @staticmethod
-    def check_token(id_token):
-        data = db.session.find_one({"_id": id_token})
-        if data is None or data["token_expiration"] < datetime.datetime.utcnow():
+    def check_token(key):
+        token = Token.decode(key)
+        if token is None or token.token_expiration < datetime.datetime.utcnow():
             return None
-        token = Token(data["id_user"])
-        token._id = data["_id"]
-        token.token_expiration = data["token_expiration"]
         return token
 
-    def show_token(self):
+
+class RefreshToken:
+    def __init__(self, id_user, role):
+        self._id = ObjectId()
+        self.key = base64.b64encode(os.urandom(24)).decode('utf-8')
+        self.token_expiration = datetime.datetime.utcnow() + datetime.timedelta(days=7)
+        self.id_user = id_user
+        self.role = role
+
+    def show_key(self):
+        return str(self._id)+"."+self.key
+
+    def id(self):
         return self._id

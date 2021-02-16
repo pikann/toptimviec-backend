@@ -34,7 +34,7 @@ def post_applicant():
         user.validate=base64.b64encode(os.urandom(24)).decode('utf-8')
 
         db.user.insert_one(user.__dict__)
-        db.applicant.insert_one(applicant.__dict__)
+        db.applicant.insert(applicant.__dict__, check_keys=False)
 
         mail_content="Chào "+applicant.name+",\nTài khoản của bạn đã được khởi tạo thành công.\nXin vui lòng nhấn vào link bên dưới để hoàn tất việc đăng ký.\n"+str(user.id())+"\n"+user.validate
 

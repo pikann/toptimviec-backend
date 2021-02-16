@@ -3,7 +3,8 @@ from controller import bp, db, list_hashtag, list_place
 from controller.auth import token_auth
 from bson.objectid import ObjectId
 import datetime
-from model import Post, Token
+from model import Post
+import threading
 
 
 @bp.route('/post', methods=['GET'])
@@ -15,11 +16,34 @@ def get_list_post():
     try:
         list_showed = [ObjectId(id_seen) for id_seen in rq["list_id_showed"]]
 
-        db_request = [{"$match": {"_id": {"$not": {"$in": list_showed}}}},
-                      {"$match": {"deadline": {"$gt": datetime.datetime.utcnow()}}}]
-        if rq["place"] != "":
-            db_request += [{"$match": {"place": rq["place"]}}]
-        if len(rq["list_hashtag"]) > 0:
+        if g.current_token is not None:
+            token = g.current_token
+            db_request = [{"$match": {"_id": token.id_user}},
+                          {"$project": {"hashtag": {"$objectToArray": "$hashtag"}, "_id": 0}},
+                          {"$unwind": "$hashtag"},
+                          {"$lookup": {
+                              "from": "post",
+                              "localField": "hashtag.k",
+                              "foreignField": "hashtag",
+                              "as": "post"
+                          }
+                          },
+                          {"$unwind": "$post"},
+                          {"$group": {
+                              "_id": "$post._id",
+                              "title": {"$first": "$post.title"},
+                              "employer": {"$first": "$post.employer"},
+                              "place": {"$first": "$post.place"},
+                              "salary": {"$first": "$post.salary"},
+                              "hashtag": {"$first": "$post.hashtag"},
+                              "deadline": {"$first": "$post.deadline"},
+                              "count_find": {"$sum": "$hashtag.v"}
+                          }},
+                          {"$match": {"_id": {"$not": {"$in": list_showed}}}},
+                          {"$match": {"deadline": {"$gt": datetime.datetime.utcnow()}}}]
+            if rq["place"] != "":
+                db_request += [{"$match": {"place": rq["place"]}}]
+
             db_request += [{"$unwind": "$hashtag"},
                            {"$group": {
                                "_id": "$_id",
@@ -28,79 +52,131 @@ def get_list_post():
                                "place": {"$first": "$place"},
                                "salary": {"$first": "$salary"},
                                "hashtag": {"$addToSet": '$hashtag'},
+                               "count_find": {"$first": "$count_find"},
                                "count_hashtag": {"$sum": 1}}
                            },
-                           {"$unwind": "$hashtag"},
-                           {"$match": {"hashtag": {"$in": rq["list_hashtag"]}}},
-                           {"$group": {
-                               "_id": "$_id",
-                               "title": {"$first": "$title"},
-                               "employer": {"$first": "$employer"},
-                               "place": {"$first": "$place"},
-                               "salary": {"$first": "$salary"},
-                               "count_hashtag": {"$first": "$count_hashtag"},
-                               "count_find": {"$sum": 1}}
-                           },
-                           {"$sort": {"count_find": -1, "count_hashtag": 1, "_id": -1}},
+                           {"$sort": {"count_find": -1, "_id": -1}},
                            {"$limit": 20},
                            {"$lookup": {
                                "from": "employer",
                                "localField": "employer",
                                "foreignField": "_id",
                                "as": "employer"
-                           }},
-                           {"$lookup": {
-                               "from": "post",
-                               "localField": "_id",
-                               "foreignField": "_id",
-                               "as": "hashtag"
                            }},
                            {"$unwind": "$employer"},
                            {"$project": {
                                "employer.bio": 0,
                                "employer.url": 0,
-                               "count_find": 0
+                               "count_find": 0,
+                               "count_hashtag": 0
                            }},
-                           {"$unwind": "$hashtag"},
                            {"$set": {
                                "employer._id": {"$toString": "$employer._id"},
-                               "_id": {"$toString": "$_id"},
-                               "hashtag": "$hashtag.hashtag"
+                               "_id": {"$toString": "$_id"}
                            }}]
+            list_post = list(db.applicant.aggregate(db_request))
+            return {"list_post": list_post}
         else:
-            db_request += [{"$sort": {"_id": -1}},
-                           {"$limit": 20},
-                           {"$project": {
-                               "_id": {"$toString": "$_id"},
-                               "title": 1,
-                               "employer": 1,
-                               "place": 1,
-                               "hashtag": 1,
-                               "salary": 1
-                           }},
-                           {"$lookup": {
-                               "from": "employer",
-                               "localField": "employer",
-                               "foreignField": "_id",
-                               "as": "employer"
-                           }},
-                           {"$unwind": "$employer"},
-                           {"$project": {
-                               "employer.bio": 0,
-                               "employer.url": 0
-                           }},
-                           {"$set": {
-                               "employer._id": {"$toString": "$employer._id"}
-                           }}]
+            db_request = [{"$match": {"_id": {"$not": {"$in": list_showed}}}},
+                          {"$match": {"deadline": {"$gt": datetime.datetime.utcnow()}}}]
+            if rq["place"] != "":
+                db_request += [{"$match": {"place": rq["place"]}}]
+            if len(rq["list_hashtag"]) > 0:
+                db_request += [{"$unwind": "$hashtag"},
+                               {"$group": {
+                                   "_id": "$_id",
+                                   "title": {"$first": "$title"},
+                                   "employer": {"$first": "$employer"},
+                                   "place": {"$first": "$place"},
+                                   "salary": {"$first": "$salary"},
+                                   "hashtag": {"$addToSet": '$hashtag'},
+                                   "count_hashtag": {"$sum": 1}}
+                               },
+                               {"$unwind": "$hashtag"},
+                               {"$match": {"hashtag": {"$in": rq["list_hashtag"]}}},
+                               {"$group": {
+                                   "_id": "$_id",
+                                   "title": {"$first": "$title"},
+                                   "employer": {"$first": "$employer"},
+                                   "place": {"$first": "$place"},
+                                   "salary": {"$first": "$salary"},
+                                   "count_hashtag": {"$first": "$count_hashtag"},
+                                   "count_find": {"$sum": 1}}
+                               },
+                               {"$sort": {"count_find": -1, "count_hashtag": 1, "_id": -1}},
+                               {"$limit": 20},
+                               {"$lookup": {
+                                   "from": "employer",
+                                   "localField": "employer",
+                                   "foreignField": "_id",
+                                   "as": "employer"
+                               }},
+                               {"$lookup": {
+                                   "from": "post",
+                                   "localField": "_id",
+                                   "foreignField": "_id",
+                                   "as": "hashtag"
+                               }},
+                               {"$unwind": "$employer"},
+                               {"$project": {
+                                   "employer.bio": 0,
+                                   "employer.url": 0,
+                                   "count_find": 0
+                               }},
+                               {"$unwind": "$hashtag"},
+                               {"$set": {
+                                   "employer._id": {"$toString": "$employer._id"},
+                                   "_id": {"$toString": "$_id"},
+                                   "hashtag": "$hashtag.hashtag"
+                               }}]
+            else:
+                db_request += [{"$sort": {"_id": -1}},
+                               {"$limit": 20},
+                               {"$project": {
+                                   "_id": {"$toString": "$_id"},
+                                   "title": 1,
+                                   "employer": 1,
+                                   "place": 1,
+                                   "hashtag": 1,
+                                   "salary": 1
+                               }},
+                               {"$lookup": {
+                                   "from": "employer",
+                                   "localField": "employer",
+                                   "foreignField": "_id",
+                                   "as": "employer"
+                               }},
+                               {"$unwind": "$employer"},
+                               {"$project": {
+                                   "employer.bio": 0,
+                                   "employer.url": 0
+                               }},
+                               {"$set": {
+                                   "employer._id": {"$toString": "$employer._id"}
+                               }}]
 
-        list_post = list(db.post.aggregate(db_request))
-        return {"list_post": list_post}
+            list_post = list(db.post.aggregate(db_request))
+            return {"list_post": list_post}
     except:
         abort(403)
 
 
+def learn_user_hashtag(id_user, post_hashtag):
+    try:
+        user = db.applicant.find_one({"_id": id_user})
+        user_hashtag = user["hashtag"]
+        hashtag = {}
+        for h in post_hashtag:
+            user_hashtag[h] += 1
+        for h in user_hashtag:
+            hashtag[h] = user_hashtag[h] * 10 / sum(user_hashtag.values())
+        db.applicant.update_one({"_id": id_user}, {"$set": {"hashtag": hashtag}})
+    except:
+        pass
+
+
 @bp.route('/post/<id>', methods=['GET'])
-@token_auth.login_required(optional=True)
+@token_auth.login_required(optional=True, role="applicant")
 def get_post(id):
     try:
         post = list(db.post.aggregate([{"$match": {"_id": ObjectId(id)}},
@@ -122,8 +198,10 @@ def get_post(id):
                                        }}]))
     except:
         abort(403)
-    if len(post)==0:
+    if len(post) == 0:
         abort(404)
+    if g.current_token is not None:
+        threading.Thread(target=learn_user_hashtag, args=(g.current_token.id_user, post[0]["hashtag"],)).start()
     return {"post": post[0]}
 
 
@@ -176,14 +254,14 @@ def post_post():
 def put_post(id):
     token = g.current_token
     try:
-        db_post=db.post.find_one({"_id": ObjectId(id)})
+        db_post = db.post.find_one({"_id": ObjectId(id)})
     except:
         abort(403)
 
     if db_post is None:
         abort(404)
 
-    if db_post["employer"]!=token.id_user:
+    if db_post["employer"] != token.id_user:
         abort(401)
 
     rq = request.json
@@ -243,3 +321,7 @@ def delete_post(id):
 
     db.post.delete_one({"_id": ObjectId(id)})
     return "ok"
+
+
+if __name__ == "__main__":
+    learn_user_hashtag(ObjectId("6020c6f780407c6f5796325f"), ["Java"])

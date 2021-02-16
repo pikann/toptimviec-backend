@@ -4,7 +4,7 @@ import os
 from bson.objectid import ObjectId
 import datetime
 import jwt
-from controller import db
+from controller import db, list_hashtag
 
 SECRET_KEY=b'h\xc9k\xda1\xb9\xc1\xee\xa0\x0cA\xbb\xeb\xb6\x81v\\\xee\xd0\xdc<FT\x18'
 
@@ -76,6 +76,7 @@ class Applicant:
             self.list_CV = []
             self.main_CV = ObjectId()
             self.url = ""
+            self.hashtag = {h: 0 for h in list_hashtag}
         else:
             self._id = dict["_id"]
             self.name = dict["name"]
@@ -86,6 +87,7 @@ class Applicant:
             self.list_CV = dict["list_CV"]
             self.main_CV = dict["main_CV"]
             self.url = dict["url"]
+            self.hashtag = dict["hashtag"]
 
     def id(self):
         return self._id

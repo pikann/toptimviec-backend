@@ -42,6 +42,7 @@ def reset_password_forget():
         try:
             db.user.update_one({"_id": ObjectId(rq["id_user"])}, {"$set": {"password": hashlib.md5(rq['password'].encode('utf-8')).hexdigest()}})
             db.forget_key.delete_one({"id_user": ObjectId(rq["id_user"]), "key": rq["key"]})
+            db.refresh_token.delete_many({"id_user": ObjectId(rq["id_user"])})
         except:
             abort(403)
         return "ok"

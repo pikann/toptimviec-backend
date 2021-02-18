@@ -186,3 +186,12 @@ class RefreshToken:
 
     def id(self):
         return self._id
+
+
+class Mail:
+    def __init__(self, sender, receiver, title="", content=""):
+        self._id = ObjectId()
+        self.title = title
+        self.content = content
+        self.sender = sender
+        self.receiver = receiver

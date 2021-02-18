@@ -3,7 +3,8 @@ import os
 
 from flask import request, abort
 import hashlib
-from controller import bp, db, yag
+from controller import bp, db, yag, email_form
+from jinja2 import Template
 import datetime
 from bson.objectid import ObjectId
 
@@ -24,9 +25,11 @@ def forget_password():
                     "expiration": datetime.datetime.utcnow()+datetime.timedelta(seconds=3600)}
         db.forget_key.insert_one(forget_key)
 
-        mail_content = "Link thay đổi mật khẩu:\n" + str(forget_key["id_user"]) + "\n" + forget_key["key"]
+        mail_content = "Link thay đổi mật khẩu:<br>" + str(forget_key["id_user"]) + "<br>" + forget_key["key"]
+        html_content = Template(email_form).render(
+            {"content": mail_content, "href": "#", "button_text": "Đặt lại mật khẩu"})
 
-        yag.send(to=rq["email"], subject="Link thay đổi mật khẩu TopTimViec", contents=mail_content)
+        yag.send(to=rq["email"], subject="Link thay đổi mật khẩu TopTimViec", contents=html_content)
 
         return "ok"
     except:

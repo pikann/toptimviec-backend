@@ -4,9 +4,10 @@ import os
 from flask import request, abort
 from model import User, Applicant
 import hashlib
-from controller import bp, db, yag
+from controller import bp, db, yag, email_form
 import datetime
 import re
+from jinja2 import Template
 
 @bp.route("/applicant", methods=['POST'])
 def post_applicant():
@@ -36,9 +37,9 @@ def post_applicant():
         db.user.insert_one(user.__dict__)
         db.applicant.insert(applicant.__dict__, check_keys=False)
 
-        mail_content="Chào "+applicant.name+",\nTài khoản của bạn đã được khởi tạo thành công.\nXin vui lòng nhấn vào link bên dưới để hoàn tất việc đăng ký.\n"+str(user.id())+"\n"+user.validate
-
-        yag.send(to=user.email, subject="Xác nhận tài khoản TopTimViec", contents=mail_content)
+        mail_content="Chào "+applicant.name+",<br>Tài khoản của bạn đã được khởi tạo thành công.<br>Xin vui lòng nhấn vào link bên dưới để hoàn tất việc đăng ký.<br>"+str(user.id())+"<br>"+user.validate
+        html_content=Template(email_form).render({"content": mail_content, "href": "#", "button_text": "Xác nhận tài khoản"})
+        yag.send(to=user.email, subject="Xác nhận tài khoản TopTimViec", contents=html_content)
     except:
         abort(403)
 

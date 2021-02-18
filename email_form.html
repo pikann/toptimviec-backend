@@ -1,63 +1,65 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <style type="text/css">
-            .div1 {
-                background-color: #394141;
-                padding-top: 80px;
-                padding-bottom: 80px;
-            }
-            .image {
-                display: block;
-                margin-left: auto;
-                margin-right: auto;
-                width: 40%;
-            }
-            .div2 {
-                background-color: #E9E9E9;
-                padding-top: 15px;
-                padding-bottom: 15px;
-                padding-right: 15px;
-                padding-left: 15px;
-            }
-            .div3 {
-                background-color: #FFFFFF;
-                padding-top: 15px;
-                padding-bottom: 15px;
-                padding-right: 15px;
-                padding-left: 15px;
-                border-radius: 7px;
-            }
-            .center {
-                text-align: center;
-                padding-top: 15px;
-                padding-bottom: 15px;
-                padding-right: 15px;
-                padding-left: 15px;
-            }
-            .button {
-                background-color: #8FD974;
-                padding-top: 12px;
-                padding-bottom: 12px;
-                padding-right: 12px;
-                padding-left: 12px;
-                border-radius: 7px;
-                text-decoration: none;
-                color: #303030;
-            }
-        </style>
-    </head>
-        <body>
-            <div class="div1">
-                <img src="https://res.cloudinary.com/pikann22/image/upload/v1613642165/toptimviec/LogoMakr-87TXng_pnsj0a.png" alt="logo" class="image">
-            </div>
-            <div class="div2">
-                <div class="div3">
-                    %s<br>
-                    <div class="center">
-                        <a href="%s" class="button">%s</a>
-                    </div>
-                </div>
-            </div>
-        </body>
+<head>
+<style type='text/css'>
+.div1 {
+background-color: #394141;
+padding-top: 60px;
+padding-bottom: 60px;
+width: 600px;
+}
+.image {
+display: block;
+margin-left: auto;
+margin-right: auto;
+width: 40%;
+}
+.div2 {
+background-color: #E9E9E9;
+padding-top: 15px;
+padding-bottom: 15px;
+padding-right: 15px;
+padding-left: 15px;
+width: 570px;
+}
+.div3 {
+background-color: #FFFFFF;
+padding-top: 15px;
+padding-bottom: 15px;
+padding-right: 15px;
+padding-left: 15px;
+border-radius: 7px;
+}
+.center {
+text-align: center;
+padding-top: 15px;
+padding-bottom: 15px;
+padding-right: 15px;
+padding-left: 15px;
+}
+.button {
+background-color: #8FD974;
+padding-top: 12px;
+padding-bottom: 12px;
+padding-right: 12px;
+padding-left: 12px;
+border-radius: 7px;
+text-decoration: none;
+color: #303030;
+}
+</style>
+</head>
+<body>
+<div class='div1'>
+<img src='https://res.cloudinary.com/pikann22/image/upload/v1613642165/toptimviec/LogoMakr-87TXng_pnsj0a.png' alt='logo' class='image'>
+</div>
+<div class='div2'>
+<div class='div3'>
+{{content}}<br>
+<div class='center'>
+<a href='{{href}}' class='button'>{{button_text}}</a>
+</div>
+</div>
+</div>
+</body>
 </html>

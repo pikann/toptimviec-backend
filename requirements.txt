@@ -12,3 +12,4 @@ keyring~=22.0.1
 dnspython~=2.1.0
 flask_httpauth~=4.2.0
 PyJWT~=1.4.2
+Jinja2~=2.11.2

@@ -4,7 +4,8 @@ import os
 from flask import request, abort
 from model import User, Employer
 import hashlib
-from controller import bp, db, yag
+from controller import bp, db, yag, email_form
+from jinja2 import Template
 import datetime
 import re
 from bson.objectid import ObjectId
@@ -36,9 +37,10 @@ def post_employer():
         db.user.insert_one(user.__dict__)
         db.employer.insert_one(employer.__dict__)
 
-        mail_content = "Chào " + employer.name + ",\nTài khoản của bạn đã được khởi tạo thành công.\nXin vui lòng nhấn vào link bên dưới để hoàn tất việc đăng ký.\n" + str(
-            user.id()) + "\n" + user.validate
-        yag.send(to=user.email, subject="Xác nhận tài khoản TopTimViec", contents=mail_content)
+        mail_content = "Chào " + employer.name + ",<br>Tài khoản của bạn đã được khởi tạo thành công.<br>Xin vui lòng nhấn vào link bên dưới để hoàn tất việc đăng ký.<br>" + str(
+            user.id()) + "<br>" + user.validate
+        html_content = Template(email_form).render({"content": mail_content, "href": "#", "button_text": "Xác nhận tài khoản"})
+        yag.send(to=user.email, subject="Xác nhận tài khoản TopTimViec", contents=html_content)
     except:
         abort(400)
 

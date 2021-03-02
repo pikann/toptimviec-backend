@@ -56,11 +56,11 @@ def info():
 
 @bp.route('/token', methods=['GET'])
 def get_token():
-    rq = request.json
-    if not rq or not 'refresh_token' in rq:
+    refresh_token = request.args.get('refresh-token')
+    if not refresh_token:
         abort(400)
     try:
-        key=rq["refresh_token"].split('.')
+        key=refresh_token.split('.')
         refresh_token=db.refresh_token.find_one({"_id": ObjectId(key[0]), "key": key[1]})
     except:
         abort(403)

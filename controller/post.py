@@ -18,7 +18,7 @@ def get_list_post():
         abort(400)
 
     try:
-        if g.current_token is not None:
+        if g.current_token is not None and len(hashtag)==0:
             token = g.current_token
             db_request = [{"$match": {"_id": token.id_user}},
                           {"$project": {"hashtag": {"$objectToArray": "$hashtag"}, "_id": 0}},

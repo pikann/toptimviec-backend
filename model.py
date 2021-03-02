@@ -101,11 +101,29 @@ class CV:
         if dict is None:
             self._id = ObjectId()
             self.url = ""
+            self.name = ""
+            self.gender = True
+            self.avatar = ""
+            self.position = ""
+            self.dob = datetime.datetime.now()
+            self.address = ""
+            self.email = ""
+            self.phone = ""
             self.hashtag = []
+            self.content = []
         else:
             self._id = dict["_id"]
             self.url = dict["url"]
+            self.name = dict["name"]
+            self.gender = dict["gender"]
+            self.avatar = dict["avatar"]
+            self.position = dict["position"]
+            self.dob = dict["dob"]
+            self.address = dict["address"]
+            self.email = dict["email"]
+            self.phone = dict["phone"]
             self.hashtag = dict["hashtag"]
+            self.content = dict["content"]
 
     def id(self):
         return self._id

@@ -150,12 +150,9 @@ class Token():
 
     @staticmethod
     def decode(token):
-        try:
-            payload = jwt.decode(token, SECRET_KEY)
-            token_obj=Token(ObjectId(payload['sub']["id_user"]), payload['sub']["role"], ObjectId(payload['iss']), datetime.datetime.fromtimestamp(payload['exp']))
-            return token_obj
-        except:
-            return None
+        payload = jwt.decode(token, SECRET_KEY)
+        token_obj=Token(ObjectId(payload['sub']["id_user"]), payload['sub']["role"], ObjectId(payload['iss']), datetime.datetime.fromtimestamp(payload['exp']))
+        return token_obj
 
     def revoke_token(self):
         token_expiration = datetime.datetime.utcnow() - datetime.timedelta(seconds=1)

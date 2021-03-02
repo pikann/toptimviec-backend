@@ -10,12 +10,14 @@ import threading
 @bp.route('/post', methods=['GET'])
 @token_auth.login_required(optional=True)
 def get_list_post():
-    rq = request.json
-    if not rq or not 'list_id_showed' in rq or not 'list_hashtag' in rq or not 'place' in rq:
-        abort(400)
     try:
-        list_showed = [ObjectId(id_seen) for id_seen in rq["list_id_showed"]]
+        list_showed = [ObjectId(s.strip()) for s in request.args.get('list-id-showed', default="").split(',') if len(s.strip())>0]
+        hashtag = [s.strip() for s in request.args.get('list-hashtag', default="").split(',') if len(s.strip())>0]
+        place = request.args.get('place', default="")
+    except:
+        abort(400)
 
+    try:
         if g.current_token is not None:
             token = g.current_token
             db_request = [{"$match": {"_id": token.id_user}},
@@ -41,8 +43,8 @@ def get_list_post():
                           }},
                           {"$match": {"_id": {"$not": {"$in": list_showed}}}},
                           {"$match": {"deadline": {"$gt": datetime.datetime.utcnow()}}}]
-            if rq["place"] != "":
-                db_request += [{"$match": {"place": rq["place"]}}]
+            if place != "":
+                db_request += [{"$match": {"place": place}}]
 
             db_request += [{"$unwind": "$hashtag"},
                            {"$group": {
@@ -79,9 +81,9 @@ def get_list_post():
         else:
             db_request = [{"$match": {"_id": {"$not": {"$in": list_showed}}}},
                           {"$match": {"deadline": {"$gt": datetime.datetime.utcnow()}}}]
-            if rq["place"] != "":
-                db_request += [{"$match": {"place": rq["place"]}}]
-            if len(rq["list_hashtag"]) > 0:
+            if place != "":
+                db_request += [{"$match": {"place": place}}]
+            if len(hashtag) > 0:
                 db_request += [{"$unwind": "$hashtag"},
                                {"$group": {
                                    "_id": "$_id",
@@ -93,7 +95,7 @@ def get_list_post():
                                    "count_hashtag": {"$sum": 1}}
                                },
                                {"$unwind": "$hashtag"},
-                               {"$match": {"hashtag": {"$in": rq["list_hashtag"]}}},
+                               {"$match": {"hashtag": {"$in": hashtag}}},
                                {"$group": {
                                    "_id": "$_id",
                                    "title": {"$first": "$title"},

@@ -4,6 +4,7 @@ import os
 from bson.objectid import ObjectId
 import datetime
 import jwt
+from jwt.exceptions import ExpiredSignatureError
 from controller import db, list_hashtag
 
 SECRET_KEY=b'h\xc9k\xda1\xb9\xc1\xee\xa0\x0cA\xbb\xeb\xb6\x81v\\\xee\xd0\xdc<FT\x18'
@@ -150,7 +151,10 @@ class Token():
 
     @staticmethod
     def decode(token):
-        payload = jwt.decode(token, SECRET_KEY)
+        try:
+            payload = jwt.decode(token, SECRET_KEY)
+        except ExpiredSignatureError:
+            return None
         token_obj=Token(ObjectId(payload['sub']["id_user"]), payload['sub']["role"], ObjectId(payload['iss']), datetime.datetime.fromtimestamp(payload['exp']))
         return token_obj
 

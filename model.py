@@ -100,7 +100,6 @@ class CV:
     def __init__(self, dict=None):
         if dict is None:
             self._id = ObjectId()
-            self.url = ""
             self.name = ""
             self.gender = True
             self.avatar = ""
@@ -109,11 +108,13 @@ class CV:
             self.address = ""
             self.email = ""
             self.phone = ""
+            self.skill = []
             self.hashtag = []
             self.content = []
+            self.interests = []
+            self.find_job = True
         else:
             self._id = dict["_id"]
-            self.url = dict["url"]
             self.name = dict["name"]
             self.gender = dict["gender"]
             self.avatar = dict["avatar"]
@@ -122,11 +123,28 @@ class CV:
             self.address = dict["address"]
             self.email = dict["email"]
             self.phone = dict["phone"]
+            self.skill = dict["skill"]
             self.hashtag = dict["hashtag"]
             self.content = dict["content"]
+            self.interests = dict["interests"]
+            self.find_job = dict["find_job"]
 
     def id(self):
         return self._id
+
+
+class CV_Block:
+    def __init__(self):
+        self.title=""
+        self.content=[]
+
+
+class CV_Row:
+    def __init__(self):
+        self.title=""
+        self.position=""
+        self.time=datetime.datetime.now()
+        self.detail=""
 
 
 class User:

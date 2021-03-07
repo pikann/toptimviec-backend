@@ -79,6 +79,11 @@ def crawl_cv(url, applicant):
             if hashtag not in cv.hashtag:
                 cv.hashtag.append(hashtag)
 
+    if len(cv.hashtag)==0:
+        driver.close()
+        driver.switch_to.window(driver.window_handles[0])
+        return
+
     applicant.list_CV.append(cv.id())
     applicant.main_CV=cv.id()
 
@@ -109,7 +114,7 @@ def crawl_cv(url, applicant):
 
             try:
                 rows=[]
-                row_title_elements = block.find_elements(By.XPATH, ".//div[contains(@class, 'wraper') and not(contains(@class, 'title')) and not(contains(@class, 'time'))]")
+                row_title_elements = block.find_elements(By.XPATH, ".//div[(contains(@class, 'wraper') or contains(@class, 'wrapper')) and not(contains(@class, 'title')) and not(contains(@class, 'time'))]")
                 for row_title_element in row_title_elements:
                     row_element=row_title_element.find_element(By.XPATH, "..")
                     row={}
@@ -138,14 +143,15 @@ def crawl_cv(url, applicant):
                             pass
                     except NoSuchElementException:
                         try:
-                            row["details"] = row_element.find_element(By.XPATH, ".//div[contains(@class, 'details')]").text.strip()
+                            row["details"] = row_element.find_element(By.XPATH, ".//div[contains(@class, 'details') or contains(@class, 'data')]").text.strip()
                         except NoSuchElementException:
                             try:
                                 row["details"] = row_element.find_element(By.XPATH, "..").find_element(By.XPATH, ".//div[@class='row-details']").text.strip()
                                 if row_element.find_element(By.XPATH, "..").find_element(By.XPATH, "..").get_attribute("class")=="row":
                                     row["time"] = row_element.find_element(By.XPATH, "..").find_element(By.XPATH, "..").find_element(By.XPATH, ".//div[contains(@class, 'time')]").text.strip().replace("\n\n", "-")
                             except NoSuchElementException:
-                                pass
+                                row["details"] = row_element.find_element(By.XPATH, "..").find_element(By.XPATH, "..").find_element(By.XPATH, ".//div[@class='row-col-data']").text.strip()
+                                row["time"] = row_element.find_element(By.XPATH, "..").find_element(By.XPATH, ".//div[contains(@class, 'time')]").text.strip()
                     if len(row)==1:
                         rows.append(row_element.text.strip())
                     else:
@@ -165,7 +171,12 @@ def crawl_cv(url, applicant):
         except NoSuchElementException:
             pass
 
+    if len(content)==0:
+        driver.close()
+        driver.switch_to.window(driver.window_handles[0])
+        return
     cv.content=content
+    print(applicant.__dict__)
     print(cv.__dict__)
 
     driver.close()
@@ -181,26 +192,31 @@ def crawl_list_cv():
     driver.find_element(By.XPATH, "//input[@id='keyword']").send_keys("Lập trình viên")
     driver.find_element(By.XPATH, "//button[@class='btn btn-block btn-primary']").click()
 
-    time.sleep(2)
-
-    candidate_list=driver.find_element(By.XPATH, "//div[@class='candidate-list']").find_elements(By.XPATH, ".//div[@class='candidate']")
-
-    for candidate in candidate_list:
-        applicant=Applicant()
-        applicant.name=candidate.find_element(By.XPATH, ".//a[@class='name']").text.strip()
-        applicant.avatar=candidate.find_element_by_tag_name("img").get_attribute("src")
-        place=candidate.find_element(By.XPATH, ".//div[@class='location']").text.strip()[10:]
-        if place in list_place:
-            applicant.place=place
-        candidate.find_element(By.XPATH, ".//a[@class='name']").click()
-
+    while True:
         time.sleep(2)
+        candidate_list=driver.find_element(By.XPATH, "//div[@class='candidate-list']").find_elements(By.XPATH, ".//div[@class='candidate']")
 
-        url = driver.find_element(By.XPATH, "//iframe[@id='iframe-view-candidate']").get_attribute("src")
+        for candidate in candidate_list:
+            applicant=Applicant()
+            applicant.name=candidate.find_element(By.XPATH, ".//a[@class='name']").text.strip()
+            applicant.avatar=candidate.find_element_by_tag_name("img").get_attribute("src")
+            place=candidate.find_element(By.XPATH, ".//div[@class='location']").text.strip()[10:]
+            if place in list_place:
+                applicant.place=place
+            if applicant.place=="":
+                continue
+            candidate.find_element(By.XPATH, ".//a[@class='name']").click()
+
+            time.sleep(2)
+
+            url = driver.find_element(By.XPATH, "//iframe[@id='iframe-view-candidate']").get_attribute("src")
+            print(url)
+            crawl_cv(url, applicant)
 
 
+            driver.find_element(By.XPATH, ".//a[text()=' Đóng lại']").click()
 
-        driver.find_element(By.XPATH, ".//a[text()=' Đóng lại']").click()
+        driver.find_element(By.XPATH, "//nav[@aria-label='Page navigation']").find_element(By.XPATH, "//a[@aria-label='Next']").click()
 
 
 def login():
@@ -218,7 +234,7 @@ def login():
 
 
 if __name__=="__main__":
-    # login()
-    # crawl_list_cv()
-    crawl_cv("https://www.topcv.vn/private/36abbc41d539ccbb63bb73707a1e20ff?token=1030834adc7f0fe642ee19c9525bff07&al=2&sig=eyJkYXRhIjp7InByaXZhdGVfa2V5IjoiMzZhYmJjNDFkNTM5Y2NiYjYzYmI3MzcwN2ExZTIwZmYifSwiZXhwaXJlQXQiOiIyMDIxLTAzLTAxIDIxOjU3OjU2Iiwic2lnbmF0dXJlIjoiY2I2MDNjMzY4YWNmYjg1ZmM0YzFmNjA3OWNmMjU0ZmQifQ%3D%3D&iframe=true",
-             applicant=Applicant())
+    login()
+    crawl_list_cv()
+    # crawl_cv("https://www.topcv.vn/private/a546af46bb1b34b4d8f2b6978b9a3e13?token=4ac298c67a9d0ca9644786a31816d404&al=2&sig=eyJkYXRhIjp7InByaXZhdGVfa2V5IjoiYTU0NmFmNDZiYjFiMzRiNGQ4ZjJiNjk3OGI5YTNlMTMifSwiZXhwaXJlQXQiOiIyMDIxLTAzLTA1IDE3OjEzOjI1Iiwic2lnbmF0dXJlIjoiYjg5YzZhYTFkZTdiMTZhMWMzNGNjYmI0MmRmZDE2YjcifQ%3D%3D&iframe=true",
+    #          applicant=Applicant())

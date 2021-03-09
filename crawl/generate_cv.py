@@ -14,6 +14,7 @@ for step in range(10000):
     cv.address = "Liên Chiểu, Đà Nẵng"
     cv.email = "abc@gmail.com"
     cv.phone = "0123456789"
+    cv.place = "Đà Nẵng"
     rand_hashtags=[]
     for i in range(5):
         rand_hashtag=random.choice(list_hashtag)

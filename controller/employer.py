@@ -35,7 +35,7 @@ def post_employer():
         user.validate = base64.b64encode(os.urandom(24)).decode('utf-8')
 
         db.user.insert_one(user.__dict__)
-        db.employer.insert_one(employer.__dict__)
+        db.employer.insert_one(employer.__dict__, check_keys=False)
 
         mail_content = "Chào " + employer.name + ",<br>Tài khoản của bạn đã được khởi tạo thành công.<br>Xin vui lòng nhấn vào link bên dưới để hoàn tất việc đăng ký.<br>" + str(
             user.id()) + "<br>" + user.validate

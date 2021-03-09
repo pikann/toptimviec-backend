@@ -51,12 +51,14 @@ class Employer:
             self.bio = ""
             self.avatar = ""
             self.url = ""
+            self.hashtag = {h: 0 for h in list_hashtag}
         else:
             self._id = dict["_id"]
             self.name = dict["name"]
             self.bio = dict["bio"]
             self.avatar = dict["avatar"]
             self.url = dict["url"]
+            self.hashtag = dict["hashtag"]
 
     def id(self):
         return self._id

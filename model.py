@@ -190,7 +190,7 @@ class Token():
         try:
             payload = jwt.decode(token, SECRET_KEY)
         except ExpiredSignatureError:
-            return None
+            pass
         token_obj=Token(ObjectId(payload['sub']["id_user"]), payload['sub']["role"], ObjectId(payload['iss']), datetime.datetime.fromtimestamp(payload['exp']))
         return token_obj
 

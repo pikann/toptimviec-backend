@@ -187,10 +187,8 @@ class Token():
 
     @staticmethod
     def decode(token):
-        try:
-            payload = jwt.decode(token, SECRET_KEY)
-        except ExpiredSignatureError:
-            pass
+        payload = jwt.decode(token, SECRET_KEY)
+        
         token_obj=Token(ObjectId(payload['sub']["id_user"]), payload['sub']["role"], ObjectId(payload['iss']), datetime.datetime.fromtimestamp(payload['exp']))
         return token_obj
 

@@ -3,7 +3,7 @@ import datetime
 import random
 from controller import list_hashtag, db
 
-for step in range(10000):
+for step in range(2000):
     print(step)
     cv=CV()
     cv.name="Nguyễn Văn A"

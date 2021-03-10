@@ -163,7 +163,7 @@ def get_list_post():
         abort(403)
 
 
-def learn_user_hashtag(id_user, post_hashtag):
+def learn_applicant_hashtag(id_user, post_hashtag):
     try:
         user = db.applicant.find_one({"_id": id_user})
         user_hashtag = user["hashtag"]
@@ -203,7 +203,7 @@ def get_post(id):
     if len(post) == 0:
         abort(404)
     if g.current_token is not None:
-        threading.Thread(target=learn_user_hashtag, args=(g.current_token.id_user, post[0]["hashtag"],)).start()
+        threading.Thread(target=learn_applicant_hashtag, args=(g.current_token.id_user, post[0]["hashtag"],)).start()
     return {"post": post[0]}
 
 
@@ -264,7 +264,7 @@ def put_post(id):
         abort(404)
 
     if db_post["employer"] != token.id_user:
-        abort(401)
+        abort(405)
 
     rq = request.json
     if not rq or not 'title' in rq or not 'description' in rq or not 'request' in rq or \
@@ -319,11 +319,9 @@ def delete_post(id):
         abort(404)
 
     if db_post["employer"] != token.id_user:
-        abort(401)
+        abort(405)
 
     db.post.delete_one({"_id": ObjectId(id)})
     return "ok"
 
 
-if __name__ == "__main__":
-    learn_user_hashtag(ObjectId("6020c6f780407c6f5796325f"), ["Java"])

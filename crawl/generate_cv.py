@@ -1,7 +1,7 @@
 from model import CV, CV_Block, CV_Row
 import datetime
 import random
-from controller import list_hashtag, db
+from controller import list_hashtag, db, list_place
 
 for step in range(2000):
     print(step)
@@ -14,7 +14,7 @@ for step in range(2000):
     cv.address = "Liên Chiểu, Đà Nẵng"
     cv.email = "abc@gmail.com"
     cv.phone = "0123456789"
-    cv.place = "Đà Nẵng"
+    cv.place = random.choice(list_place)
     rand_hashtags=[]
     for i in range(5):
         rand_hashtag=random.choice(list_hashtag)

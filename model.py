@@ -249,6 +249,7 @@ class Token():
     @staticmethod
     def check_token(key):
         token = Token.decode(key)
+        print(SECRET_KEY)
         print(token.__dict__)
         if token is None or token.token_expiration < datetime.datetime.utcnow():
             return None

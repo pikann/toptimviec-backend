@@ -100,7 +100,7 @@ class Applicant:
 
 
 class CV:
-    def __init__(self, dict=None, applicant=ObjectId()):
+    def __init__(self, dict=None, applicant=None):
         if dict is None:
             self._id = ObjectId()
             self.name = ""
@@ -117,7 +117,10 @@ class CV:
             self.content = []
             self.interests = []
             self.find_job = True
-            self.applicant = applicant
+            if applicant is None:
+                self.applicant = ObjectId()
+            else:
+                self.applicant = applicant
         else:
             self._id = dict["_id"]
             self.name = dict["name"]
@@ -211,8 +214,11 @@ class User:
 
 
 class Token():
-    def __init__(self, id_user, role, refresh, token_expiration=datetime.datetime.utcnow() + datetime.timedelta(minutes=10)):
-        self.token_expiration = token_expiration
+    def __init__(self, id_user, role, refresh, token_expiration=None):
+        if token_expiration is None:
+            self.token_expiration = datetime.datetime.utcnow() + datetime.timedelta(minutes=10)
+        else:
+            self.token_expiration = token_expiration
         self.id_user = id_user
         self.role = role
         self.refreshToken = refresh

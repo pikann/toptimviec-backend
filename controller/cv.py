@@ -125,3 +125,58 @@ def get_cv(id):
             abort(405)
     cv.pop("applicant", None)
     return cv
+
+
+@bp.route('/cv', methods=['POST'])
+@token_auth.login_required(role="applicant")
+def post_cv():
+    token = g.current_token
+    rq = request.json
+    if not rq or not 'name' in rq or not 'gender' in rq or not 'avatar' in rq or \
+            not 'position' in rq or not 'dob' in rq or not 'address' in rq or \
+            not 'email' in rq or not 'phone' in rq or not 'place' in rq or not 'skill' in rq or\
+            not 'hashtag' in rq or not 'content' in rq or not 'interests' in rq or not 'find_job' in rq:
+        abort(400)
+    if rq["name"].__class__ != str or rq["gender"].__class__ != bool or rq["avatar"].__class__ != str or rq[
+        "position"].__class__ != str or rq["dob"].__class__ != str or rq["address"].__class__ != str or rq[
+        "email"].__class__ != str or rq["phone"].__class__ != str or rq["place"].__class__ != str or rq[
+        "skill"].__class__ != list or rq["hashtag"].__class__ != list or rq["content"].__class__ != list or rq[
+        "interests"].__class__ != list or rq["find_job"].__class__ != bool:
+        abort(400)
+    hashtag = [h for h in rq["hashtag"] if h in list_hashtag]
+    if rq["place"] not in list_place:
+        abort(400, 'Error 400: Place not exist')
+    if len(hashtag)==0:
+        abort(400, 'Error 400: Hashtag not exist')
+    if not CV.check_skill(rq["skill"]):
+        abort(400, 'Error 400: Skill is not in the correct format')
+    if not CV.check_content(rq["content"]):
+        abort(400, 'Error 400: Content is not in the correct format')
+    for interest in rq["interests"]:
+        if interest.__class__!=str:
+            abort(400)
+    cv=CV(applicant=token.id_user)
+    cv.name=rq["name"]
+    cv.gender=rq["gender"]
+    cv.avatar=rq["avatar"]
+    cv.position=rq["position"]
+    try:
+        cv.dob = datetime.datetime.strptime(rq["dob"], '%d/%m/%Y')
+    except:
+        abort(400, 'Error 400: Day of birth is not in the correct format')
+    cv.address=rq["address"]
+    cv.email=rq["email"]
+    cv.phone=rq["phone"]
+    cv.place=rq["place"]
+    cv.skill=rq["skill"]
+    cv.hashtag=hashtag
+    cv.content=rq["content"]
+    cv.interests=rq["interests"]
+    cv.find_job=rq["find_job"]
+
+    try:
+        db.cv.insert_one(cv.__dict__)
+    except:
+        abort(403)
+    return {"id_cv": str(cv.id())}
+

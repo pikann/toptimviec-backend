@@ -139,11 +139,48 @@ class CV:
     def id(self):
         return self._id
 
+    @staticmethod
+    def check_skill(skills):
+        for skill in skills:
+            if skill.__class__ != dict:
+                return False
+            if not "skill" in skill or not "rate" in skill or len(skill)!=2:
+                return False
+            if skill["skill"].__class__!=str or skill["rate"].__class__!=int:
+                return False
+            if skill["rate"]>5 or skill["rate"]<1:
+                return False
+        return True
+
+    @staticmethod
+    def check_content(contents):
+        for content in contents:
+            if content.__class__ != dict:
+                return False
+            if not "title" in content or not "content" in content or len(content) != 2:
+                return False
+            if content["title"].__class__!=str or content["content"].__class__!=list:
+                return False
+            if not CV_Block.check_content(content["content"]):
+                return False
+        return True
+
 
 class CV_Block:
     def __init__(self):
         self.title=""
         self.content=[]
+
+    @staticmethod
+    def check_content(contents):
+        for content in contents:
+            if content.__class__ != dict:
+                return False
+            if not "title" in content or not "position" in content or not "time" in content or not "detail" in content or len(content) != 4:
+                return False
+            if content["title"].__class__!=str or content["position"].__class__!=str or content["time"].__class__!=str or content["detail"].__class__!=str:
+                return False
+        return True
 
 
 class CV_Row:

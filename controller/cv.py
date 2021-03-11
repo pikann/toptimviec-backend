@@ -180,3 +180,84 @@ def post_cv():
         abort(403)
     return {"id_cv": str(cv.id())}
 
+@bp.route('/cv/<id>', methods=['PUT'])
+@token_auth.login_required()
+def put_cv(id):
+    token = g.current_token
+    try:
+        db_cv = db.cv.find_one({"_id": ObjectId(id)})
+    except:
+        abort(403)
+
+    if db_cv is None:
+        abort(404)
+
+    if db_cv["applicant"] != token.id_user:
+        abort(405)
+
+    rq = request.json
+    if not rq or not 'name' in rq or not 'gender' in rq or not 'avatar' in rq or \
+            not 'position' in rq or not 'dob' in rq or not 'address' in rq or \
+            not 'email' in rq or not 'phone' in rq or not 'place' in rq or not 'skill' in rq or\
+            not 'hashtag' in rq or not 'content' in rq or not 'interests' in rq or not 'find_job' in rq:
+        abort(400)
+    if rq["name"].__class__ != str or rq["gender"].__class__ != bool or rq["avatar"].__class__ != str or rq[
+        "position"].__class__ != str or rq["dob"].__class__ != str or rq["address"].__class__ != str or rq[
+        "email"].__class__ != str or rq["phone"].__class__ != str or rq["place"].__class__ != str or rq[
+        "skill"].__class__ != list or rq["hashtag"].__class__ != list or rq["content"].__class__ != list or rq[
+        "interests"].__class__ != list or rq["find_job"].__class__ != bool:
+        abort(400)
+    hashtag = [h for h in rq["hashtag"] if h in list_hashtag]
+    if rq["place"] not in list_place:
+        abort(400, 'Error 400: Place not exist')
+    if len(hashtag)==0:
+        abort(400, 'Error 400: Hashtag not exist')
+    if not CV.check_skill(rq["skill"]):
+        abort(400, 'Error 400: Skill is not in the correct format')
+    if not CV.check_content(rq["content"]):
+        abort(400, 'Error 400: Content is not in the correct format')
+    for interest in rq["interests"]:
+        if interest.__class__!=str:
+            abort(400)
+    cv=CV(dict=db_cv)
+    cv.name=rq["name"]
+    cv.gender=rq["gender"]
+    cv.avatar=rq["avatar"]
+    cv.position=rq["position"]
+    try:
+        cv.dob = datetime.datetime.strptime(rq["dob"], '%d/%m/%Y')
+    except:
+        abort(400, 'Error 400: Day of birth is not in the correct format')
+    cv.address=rq["address"]
+    cv.email=rq["email"]
+    cv.phone=rq["phone"]
+    cv.place=rq["place"]
+    cv.skill=rq["skill"]
+    cv.hashtag=hashtag
+    cv.content=rq["content"]
+    cv.interests=rq["interests"]
+    cv.find_job=rq["find_job"]
+
+    try:
+        db.cv.update_one({"_id": ObjectId(id)}, {"$set": cv.__dict__})
+    except:
+        abort(403)
+    return "ok"
+
+@bp.route('/cv/<id>', methods=['DELETE'])
+@token_auth.login_required()
+def delete_cv(id):
+    token = g.current_token
+    try:
+        db_cv = db.cv.find_one({"_id": ObjectId(id)}, {"_id": 0, "applicant": 1})
+    except:
+        abort(403)
+
+    if db_cv is None:
+        abort(404)
+
+    if db_cv["applicant"] != token.id_user:
+        abort(405)
+
+    db.cv.delete_one({"_id": ObjectId(id)})
+    return "ok"

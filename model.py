@@ -230,7 +230,10 @@ class Token():
 
     @staticmethod
     def decode(token):
-        payload = jwt.decode(token, SECRET_KEY)
+        try:
+            payload = jwt.decode(token, SECRET_KEY, algorithms='HS256')
+        except:
+            return None
 
         token_obj=Token(ObjectId(payload['sub']["id_user"]), payload['sub']["role"], ObjectId(payload['iss']), datetime.datetime.fromtimestamp(payload['exp']))
         return token_obj

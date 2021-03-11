@@ -68,7 +68,7 @@ def get_token():
         abort(401)
     try:
         token=Token(refresh_token["id_user"], refresh_token["role"], refresh_token["_id"])
-        return {"token": token.encode().decode('utf-8')}
+        return {"token": token.encode()}
     except:
         abort(403)
 

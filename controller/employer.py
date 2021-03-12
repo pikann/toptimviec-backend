@@ -6,7 +6,6 @@ from model import User, Employer
 import hashlib
 from controller import bp, db, yag, email_form
 from jinja2 import Template
-import datetime
 import re
 from bson.objectid import ObjectId
 
@@ -49,6 +48,7 @@ def post_employer():
 
 @bp.route("/employer/<id>", methods=['GET'])
 def get_employer(id):
+    global employer
     try:
         employer = db.employer.find_one({"_id": ObjectId(id)}, {"_id": 0, "name": 1, "bio": 1, "avatar": 1})
     except:

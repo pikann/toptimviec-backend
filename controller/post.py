@@ -5,11 +5,14 @@ from bson.objectid import ObjectId
 import datetime
 from model import Post
 import threading
+from controller.list_candidate import new_candidate_list_for_post
+from controller.learn import learn_employer_hashtag, learn_applicant_hashtag
 
 
 @bp.route('/post', methods=['GET'])
 @token_auth.login_required(optional=True)
 def get_list_post():
+    global hashtag, list_showed, place
     try:
         list_showed = [ObjectId(s.strip()) for s in request.args.get('list-id-showed', default="").split(',') if len(s.strip())>0]
         hashtag = [s.strip() for s in request.args.get('list-hashtag', default="").split(',') if len(s.strip())>0]
@@ -163,23 +166,10 @@ def get_list_post():
         abort(403)
 
 
-def learn_applicant_hashtag(id_user, post_hashtag):
-    try:
-        user = db.applicant.find_one({"_id": id_user})
-        user_hashtag = user["hashtag"]
-        hashtag = {}
-        for h in post_hashtag:
-            user_hashtag[h] += 1
-        for h in user_hashtag:
-            hashtag[h] = user_hashtag[h] * 10 / sum(user_hashtag.values())
-        db.applicant.update_one({"_id": id_user}, {"$set": {"hashtag": hashtag}})
-    except:
-        pass
-
-
 @bp.route('/post/<id>', methods=['GET'])
 @token_auth.login_required(optional=True, role="applicant")
 def get_post(id):
+    global post
     try:
         post = list(db.post.aggregate([{"$match": {"_id": ObjectId(id)}},
                                        {"$lookup": {
@@ -248,12 +238,17 @@ def post_post():
         db.post.insert_one(post.__dict__)
     except:
         abort(403)
+
+    threading.Thread(target=new_candidate_list_for_post, args=(post.title, token.id_user,)).start()
+    threading.Thread(target=learn_employer_hashtag, args=(token.id_user, hashtag,)).start()
+
     return {"id_post": str(post.id())}
 
 
 @bp.route('/post/<id>', methods=['PUT'])
 @token_auth.login_required()
 def put_post(id):
+    global db_post
     token = g.current_token
     try:
         db_post = db.post.find_one({"_id": ObjectId(id)})
@@ -309,6 +304,7 @@ def put_post(id):
 @bp.route('/post/<id>', methods=['DELETE'])
 @token_auth.login_required()
 def delete_post(id):
+    global db_post
     token = g.current_token
     try:
         db_post = db.post.find_one({"_id": ObjectId(id)}, {"_id": 0, "employer": 1})

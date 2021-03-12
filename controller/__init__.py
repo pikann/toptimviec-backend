@@ -18,6 +18,7 @@ from controller.forget_password import *
 from controller.post import *
 from controller.global_data import *
 from controller.cv import *
+from controller.list_candidate import *
 
 @bp.route('/')
 def index():

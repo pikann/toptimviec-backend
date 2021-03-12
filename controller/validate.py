@@ -1,9 +1,10 @@
 from controller import bp, db
-from flask import request, abort, jsonify
+from flask import request, abort
 from bson.objectid import ObjectId
 
 @bp.route("/validate", methods=['PUT'])
 def validate_user():
+    global user
     rq = request.json
     if not rq or not 'id' in rq or not 'key' in rq:
         abort(400)

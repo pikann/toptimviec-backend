@@ -5,11 +5,13 @@ from bson.objectid import ObjectId
 import datetime
 from model import CV
 import threading
+from controller.learn import learn_applicant_hashtag, learn_employer_hashtag
 
 
 @bp.route('/cv', methods=['GET'])
 @token_auth.login_required()
 def get_list_cv():
+    global place, list_showed, hashtag
     try:
         list_showed = [ObjectId(s.strip()) for s in request.args.get('list-id-showed', default="").split(',') if
                        len(s.strip()) > 0]
@@ -93,35 +95,21 @@ def get_list_cv():
         return {"list_cv": list_cv}
 
 
-def learn_employer_hashtag(id_user, cv_hashtag):
-    try:
-        user = db.employer.find_one({"_id": id_user})
-        user_hashtag = user["hashtag"]
-        hashtag = {}
-        for h in cv_hashtag:
-            user_hashtag[h] += 1
-        for h in user_hashtag:
-            hashtag[h] = user_hashtag[h] * 10 / sum(user_hashtag.values())
-        db.employer.update_one({"_id": id_user}, {"$set": {"hashtag": hashtag}})
-    except:
-        pass
-
-
-
 @bp.route('/cv/<id>', methods=['GET'])
 @token_auth.login_required()
 def get_cv(id):
-    token=g.current_token
+    global cv
+    token = g.current_token
     try:
-        cv=db.cv.find_one({"_id": ObjectId(id)}, {"_id": 0, "find_job": 0})
+        cv = db.cv.find_one({"_id": ObjectId(id)}, {"_id": 0, "find_job": 0})
     except:
         abort(403)
     if cv is None:
         abort(404)
-    if token.role=="employer":
+    if token.role == "employer":
         threading.Thread(target=learn_employer_hashtag, args=(g.current_token.id_user, cv["hashtag"],)).start()
-    elif token.role=="applicant":
-        if cv["applicant"]!=token.id_user:
+    elif token.role == "applicant":
+        if cv["applicant"] != token.id_user:
             abort(405)
     cv.pop("applicant", None)
     return cv
@@ -134,7 +122,7 @@ def post_cv():
     rq = request.json
     if not rq or not 'name' in rq or not 'gender' in rq or not 'avatar' in rq or \
             not 'position' in rq or not 'dob' in rq or not 'address' in rq or \
-            not 'email' in rq or not 'phone' in rq or not 'place' in rq or not 'skill' in rq or\
+            not 'email' in rq or not 'phone' in rq or not 'place' in rq or not 'skill' in rq or \
             not 'hashtag' in rq or not 'content' in rq or not 'interests' in rq or not 'find_job' in rq:
         abort(400)
     if rq["name"].__class__ != str or rq["gender"].__class__ != bool or rq["avatar"].__class__ != str or rq[
@@ -146,43 +134,48 @@ def post_cv():
     hashtag = [h for h in rq["hashtag"] if h in list_hashtag]
     if rq["place"] not in list_place:
         abort(400, 'Error 400: Place not exist')
-    if len(hashtag)==0:
+    if len(hashtag) == 0:
         abort(400, 'Error 400: Hashtag not exist')
     if not CV.check_skill(rq["skill"]):
         abort(400, 'Error 400: Skill is not in the correct format')
     if not CV.check_content(rq["content"]):
         abort(400, 'Error 400: Content is not in the correct format')
     for interest in rq["interests"]:
-        if interest.__class__!=str:
+        if interest.__class__ != str:
             abort(400)
-    cv=CV(applicant=token.id_user)
-    cv.name=rq["name"]
-    cv.gender=rq["gender"]
-    cv.avatar=rq["avatar"]
-    cv.position=rq["position"]
+    cv = CV(applicant=token.id_user)
+    cv.name = rq["name"]
+    cv.gender = rq["gender"]
+    cv.avatar = rq["avatar"]
+    cv.position = rq["position"]
     try:
         cv.dob = datetime.datetime.strptime(rq["dob"], '%d/%m/%Y')
     except:
         abort(400, 'Error 400: Day of birth is not in the correct format')
-    cv.address=rq["address"]
-    cv.email=rq["email"]
-    cv.phone=rq["phone"]
-    cv.place=rq["place"]
-    cv.skill=rq["skill"]
-    cv.hashtag=hashtag
-    cv.content=rq["content"]
-    cv.interests=rq["interests"]
-    cv.find_job=rq["find_job"]
+    cv.address = rq["address"]
+    cv.email = rq["email"]
+    cv.phone = rq["phone"]
+    cv.place = rq["place"]
+    cv.skill = rq["skill"]
+    cv.hashtag = hashtag
+    cv.content = rq["content"]
+    cv.interests = rq["interests"]
+    cv.find_job = rq["find_job"]
 
     try:
         db.cv.insert_one(cv.__dict__)
     except:
         abort(403)
+
+    threading.Thread(target=learn_applicant_hashtag, args=(g.current_token.id_user, hashtag,)).start()
+
     return {"id_cv": str(cv.id())}
+
 
 @bp.route('/cv/<id>', methods=['PUT'])
 @token_auth.login_required()
 def put_cv(id):
+    global db_cv
     token = g.current_token
     try:
         db_cv = db.cv.find_one({"_id": ObjectId(id)})
@@ -198,7 +191,7 @@ def put_cv(id):
     rq = request.json
     if not rq or not 'name' in rq or not 'gender' in rq or not 'avatar' in rq or \
             not 'position' in rq or not 'dob' in rq or not 'address' in rq or \
-            not 'email' in rq or not 'phone' in rq or not 'place' in rq or not 'skill' in rq or\
+            not 'email' in rq or not 'phone' in rq or not 'place' in rq or not 'skill' in rq or \
             not 'hashtag' in rq or not 'content' in rq or not 'interests' in rq or not 'find_job' in rq:
         abort(400)
     if rq["name"].__class__ != str or rq["gender"].__class__ != bool or rq["avatar"].__class__ != str or rq[
@@ -210,33 +203,33 @@ def put_cv(id):
     hashtag = [h for h in rq["hashtag"] if h in list_hashtag]
     if rq["place"] not in list_place:
         abort(400, 'Error 400: Place not exist')
-    if len(hashtag)==0:
+    if len(hashtag) == 0:
         abort(400, 'Error 400: Hashtag not exist')
     if not CV.check_skill(rq["skill"]):
         abort(400, 'Error 400: Skill is not in the correct format')
     if not CV.check_content(rq["content"]):
         abort(400, 'Error 400: Content is not in the correct format')
     for interest in rq["interests"]:
-        if interest.__class__!=str:
+        if interest.__class__ != str:
             abort(400)
-    cv=CV(dict=db_cv)
-    cv.name=rq["name"]
-    cv.gender=rq["gender"]
-    cv.avatar=rq["avatar"]
-    cv.position=rq["position"]
+    cv = CV(dict=db_cv)
+    cv.name = rq["name"]
+    cv.gender = rq["gender"]
+    cv.avatar = rq["avatar"]
+    cv.position = rq["position"]
     try:
         cv.dob = datetime.datetime.strptime(rq["dob"], '%d/%m/%Y')
     except:
         abort(400, 'Error 400: Day of birth is not in the correct format')
-    cv.address=rq["address"]
-    cv.email=rq["email"]
-    cv.phone=rq["phone"]
-    cv.place=rq["place"]
-    cv.skill=rq["skill"]
-    cv.hashtag=hashtag
-    cv.content=rq["content"]
-    cv.interests=rq["interests"]
-    cv.find_job=rq["find_job"]
+    cv.address = rq["address"]
+    cv.email = rq["email"]
+    cv.phone = rq["phone"]
+    cv.place = rq["place"]
+    cv.skill = rq["skill"]
+    cv.hashtag = hashtag
+    cv.content = rq["content"]
+    cv.interests = rq["interests"]
+    cv.find_job = rq["find_job"]
 
     try:
         db.cv.update_one({"_id": ObjectId(id)}, {"$set": cv.__dict__})
@@ -244,9 +237,11 @@ def put_cv(id):
         abort(403)
     return "ok"
 
+
 @bp.route('/cv/<id>', methods=['DELETE'])
 @token_auth.login_required()
 def delete_cv(id):
+    global db_cv
     token = g.current_token
     try:
         db_cv = db.cv.find_one({"_id": ObjectId(id)}, {"_id": 0, "applicant": 1})

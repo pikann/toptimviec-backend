@@ -10,6 +10,7 @@ from bson.objectid import ObjectId
 
 @bp.route("/forget-password", methods=['POST'])
 def forget_password():
+    global user
     rq = request.json
     if not rq or not 'email' in rq:
         abort(400)

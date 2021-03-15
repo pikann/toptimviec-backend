@@ -6,8 +6,9 @@ from controller import *
 from flask_socketio import SocketIO
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = 'secret!'
 app.register_blueprint(bp)
-socketio = SocketIO(app)
+socketio = SocketIO(app, engineio_logger=True, logger=True)
 
 if __name__ == "__main__":
     socketio.run(app, debug=True)

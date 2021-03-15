@@ -20,6 +20,7 @@ from controller.global_data import *
 from controller.cv import *
 from controller.list_candidate import *
 from controller.mail import *
+from controller.notification import *
 
 @bp.route('/')
 def index():

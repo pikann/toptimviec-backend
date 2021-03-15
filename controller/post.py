@@ -1,4 +1,4 @@
-from flask import g, abort, request
+from flask import g, abort, request, make_response
 from controller import bp, db, list_hashtag, list_place
 from controller.auth import token_auth
 from bson.objectid import ObjectId
@@ -12,43 +12,92 @@ from controller.learn import learn_employer_hashtag, learn_applicant_hashtag
 @bp.route('/post', methods=['GET'])
 @token_auth.login_required(optional=True)
 def get_list_post():
-    global hashtag, list_showed, place
+    global hashtag, list_showed, place, list_post
+    rq = request.json
+    if not rq or not 'list_id_showed' in rq or not 'list_hashtag' in rq or not 'place' in rq:
+        abort(400)
+    if rq["list_id_showed"].__class__ != list or rq["list_hashtag"].__class__ != list or rq["place"].__class__ != str:
+        abort(400)
     try:
-        list_showed = [ObjectId(s.strip()) for s in request.args.get('list-id-showed', default="").split(',') if len(s.strip())>0]
-        hashtag = [s.strip() for s in request.args.get('list-hashtag', default="").split(',') if len(s.strip())>0]
-        place = request.args.get('place', default="")
+        list_showed = [ObjectId(s) for s in rq["list_id_showed"]]
+        hashtag = [h for h in rq["list_hashtag"] if h in list_hashtag]
+        if rq["place"] in list_place:
+            place=rq["place"]
+        else:
+            place=""
     except:
         abort(400)
 
-    try:
-        if g.current_token is not None and len(hashtag)==0:
-            token = g.current_token
-            db_request = [{"$match": {"_id": token.id_user}},
-                          {"$project": {"hashtag": {"$objectToArray": "$hashtag"}, "_id": 0}},
-                          {"$unwind": "$hashtag"},
-                          {"$lookup": {
-                              "from": "post",
-                              "localField": "hashtag.k",
-                              "foreignField": "hashtag",
-                              "as": "post"
-                          }
-                          },
-                          {"$unwind": "$post"},
-                          {"$group": {
-                              "_id": "$post._id",
-                              "title": {"$first": "$post.title"},
-                              "employer": {"$first": "$post.employer"},
-                              "place": {"$first": "$post.place"},
-                              "salary": {"$first": "$post.salary"},
-                              "hashtag": {"$first": "$post.hashtag"},
-                              "deadline": {"$first": "$post.deadline"},
-                              "count_find": {"$sum": "$hashtag.v"}
-                          }},
-                          {"$match": {"_id": {"$not": {"$in": list_showed}}}},
-                          {"$match": {"deadline": {"$gt": datetime.datetime.utcnow()}}}]
-            if place != "":
-                db_request += [{"$match": {"place": place}}]
 
+    if g.current_token is not None and len(hashtag)==0:
+        token = g.current_token
+        db_request = [{"$match": {"_id": token.id_user}},
+                      {"$project": {"hashtag": {"$objectToArray": "$hashtag"}, "_id": 0}},
+                      {"$unwind": "$hashtag"},
+                      {"$lookup": {
+                          "from": "post",
+                          "localField": "hashtag.k",
+                          "foreignField": "hashtag",
+                          "as": "post"
+                      }
+                      },
+                      {"$unwind": "$post"},
+                      {"$group": {
+                          "_id": "$post._id",
+                          "title": {"$first": "$post.title"},
+                          "employer": {"$first": "$post.employer"},
+                          "place": {"$first": "$post.place"},
+                          "salary": {"$first": "$post.salary"},
+                          "hashtag": {"$first": "$post.hashtag"},
+                          "deadline": {"$first": "$post.deadline"},
+                          "count_find": {"$sum": "$hashtag.v"}
+                      }},
+                      {"$match": {"_id": {"$not": {"$in": list_showed}}}},
+                      {"$match": {"deadline": {"$gt": datetime.datetime.utcnow()}}}]
+        if place != "":
+            db_request += [{"$match": {"place": place}}]
+
+        db_request += [{"$unwind": "$hashtag"},
+                       {"$group": {
+                           "_id": "$_id",
+                           "title": {"$first": "$title"},
+                           "employer": {"$first": "$employer"},
+                           "place": {"$first": "$place"},
+                           "salary": {"$first": "$salary"},
+                           "hashtag": {"$addToSet": '$hashtag'},
+                           "count_find": {"$first": "$count_find"},
+                           "count_hashtag": {"$sum": 1}}
+                       },
+                       {"$sort": {"count_find": -1, "_id": -1}},
+                       {"$limit": 20},
+                       {"$lookup": {
+                           "from": "employer",
+                           "localField": "employer",
+                           "foreignField": "_id",
+                           "as": "employer"
+                       }},
+                       {"$unwind": "$employer"},
+                       {"$project": {
+                           "employer.bio": 0,
+                           "employer.url": 0,
+                           "count_find": 0,
+                           "count_hashtag": 0
+                       }},
+                       {"$set": {
+                           "employer._id": {"$toString": "$employer._id"},
+                           "_id": {"$toString": "$_id"}
+                       }}]
+        try:
+            list_post = list(db.applicant.aggregate(db_request))
+        except:
+            abort(403)
+        return {"list_post": list_post}
+    else:
+        db_request = [{"$match": {"_id": {"$not": {"$in": list_showed}}}},
+                      {"$match": {"deadline": {"$gt": datetime.datetime.utcnow()}}}]
+        if place != "":
+            db_request += [{"$match": {"place": place}}]
+        if len(hashtag) > 0:
             db_request += [{"$unwind": "$hashtag"},
                            {"$group": {
                                "_id": "$_id",
@@ -57,11 +106,61 @@ def get_list_post():
                                "place": {"$first": "$place"},
                                "salary": {"$first": "$salary"},
                                "hashtag": {"$addToSet": '$hashtag'},
-                               "count_find": {"$first": "$count_find"},
                                "count_hashtag": {"$sum": 1}}
                            },
-                           {"$sort": {"count_find": -1, "_id": -1}},
+                           {"$unwind": "$hashtag"},
+                           {"$match": {"hashtag": {"$in": hashtag}}},
+                           {"$group": {
+                               "_id": "$_id",
+                               "title": {"$first": "$title"},
+                               "employer": {"$first": "$employer"},
+                               "place": {"$first": "$place"},
+                               "salary": {"$first": "$salary"},
+                               "count_hashtag": {"$first": "$count_hashtag"},
+                               "count_find": {"$sum": 1}}
+                           },
+                           {"$sort": {"count_find": -1, "count_hashtag": 1, "_id": -1}},
                            {"$limit": 20},
+                           {"$lookup": {
+                               "from": "employer",
+                               "localField": "employer",
+                               "foreignField": "_id",
+                               "as": "employer"
+                           }},
+                           {"$lookup": {
+                               "from": "post",
+                               "localField": "_id",
+                               "foreignField": "_id",
+                               "as": "hashtag"
+                           }},
+                           {"$unwind": "$employer"},
+                           {"$project": {
+                               "employer.bio": 0,
+                               "employer.url": 0,
+                               "count_find": 0
+                           }},
+                           {"$unwind": "$hashtag"},
+                           {"$set": {
+                               "employer._id": {"$toString": "$employer._id"},
+                               "_id": {"$toString": "$_id"},
+                               "hashtag": "$hashtag.hashtag"
+                           }}]
+            try:
+                list_post = list(db.post.aggregate(db_request))
+            except:
+                abort(403)
+            return {"list_post": list_post}
+        else:
+            db_request += [{"$sort": {"_id": -1}},
+                           {"$limit": 20},
+                           {"$project": {
+                               "_id": {"$toString": "$_id"},
+                               "title": 1,
+                               "employer": 1,
+                               "place": 1,
+                               "hashtag": 1,
+                               "salary": 1
+                           }},
                            {"$lookup": {
                                "from": "employer",
                                "localField": "employer",
@@ -71,99 +170,18 @@ def get_list_post():
                            {"$unwind": "$employer"},
                            {"$project": {
                                "employer.bio": 0,
-                               "employer.url": 0,
-                               "count_find": 0,
-                               "count_hashtag": 0
+                               "employer.url": 0
                            }},
                            {"$set": {
-                               "employer._id": {"$toString": "$employer._id"},
-                               "_id": {"$toString": "$_id"}
+                               "employer._id": {"$toString": "$employer._id"}
                            }}]
-            list_post = list(db.applicant.aggregate(db_request))
-            return {"list_post": list_post}
-        else:
-            db_request = [{"$match": {"_id": {"$not": {"$in": list_showed}}}},
-                          {"$match": {"deadline": {"$gt": datetime.datetime.utcnow()}}}]
-            if place != "":
-                db_request += [{"$match": {"place": place}}]
-            if len(hashtag) > 0:
-                db_request += [{"$unwind": "$hashtag"},
-                               {"$group": {
-                                   "_id": "$_id",
-                                   "title": {"$first": "$title"},
-                                   "employer": {"$first": "$employer"},
-                                   "place": {"$first": "$place"},
-                                   "salary": {"$first": "$salary"},
-                                   "hashtag": {"$addToSet": '$hashtag'},
-                                   "count_hashtag": {"$sum": 1}}
-                               },
-                               {"$unwind": "$hashtag"},
-                               {"$match": {"hashtag": {"$in": hashtag}}},
-                               {"$group": {
-                                   "_id": "$_id",
-                                   "title": {"$first": "$title"},
-                                   "employer": {"$first": "$employer"},
-                                   "place": {"$first": "$place"},
-                                   "salary": {"$first": "$salary"},
-                                   "count_hashtag": {"$first": "$count_hashtag"},
-                                   "count_find": {"$sum": 1}}
-                               },
-                               {"$sort": {"count_find": -1, "count_hashtag": 1, "_id": -1}},
-                               {"$limit": 20},
-                               {"$lookup": {
-                                   "from": "employer",
-                                   "localField": "employer",
-                                   "foreignField": "_id",
-                                   "as": "employer"
-                               }},
-                               {"$lookup": {
-                                   "from": "post",
-                                   "localField": "_id",
-                                   "foreignField": "_id",
-                                   "as": "hashtag"
-                               }},
-                               {"$unwind": "$employer"},
-                               {"$project": {
-                                   "employer.bio": 0,
-                                   "employer.url": 0,
-                                   "count_find": 0
-                               }},
-                               {"$unwind": "$hashtag"},
-                               {"$set": {
-                                   "employer._id": {"$toString": "$employer._id"},
-                                   "_id": {"$toString": "$_id"},
-                                   "hashtag": "$hashtag.hashtag"
-                               }}]
-            else:
-                db_request += [{"$sort": {"_id": -1}},
-                               {"$limit": 20},
-                               {"$project": {
-                                   "_id": {"$toString": "$_id"},
-                                   "title": 1,
-                                   "employer": 1,
-                                   "place": 1,
-                                   "hashtag": 1,
-                                   "salary": 1
-                               }},
-                               {"$lookup": {
-                                   "from": "employer",
-                                   "localField": "employer",
-                                   "foreignField": "_id",
-                                   "as": "employer"
-                               }},
-                               {"$unwind": "$employer"},
-                               {"$project": {
-                                   "employer.bio": 0,
-                                   "employer.url": 0
-                               }},
-                               {"$set": {
-                                   "employer._id": {"$toString": "$employer._id"}
-                               }}]
-
-            list_post = list(db.post.aggregate(db_request))
-            return {"list_post": list_post}
-    except:
-        abort(403)
+            try:
+                list_post = list(db.post.aggregate(db_request))
+            except:
+                abort(403)
+            response=make_response({"list_post": list_post})
+            response.status_code=401
+            return response
 
 
 @bp.route('/post/<id>', methods=['GET'])

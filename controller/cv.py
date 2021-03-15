@@ -9,14 +9,21 @@ from controller.learn import learn_applicant_hashtag, learn_employer_hashtag
 
 
 @bp.route('/cv', methods=['GET'])
-@token_auth.login_required()
+@token_auth.login_required(role="employer")
 def get_list_cv():
     global place, list_showed, hashtag
+    rq = request.json
+    if not rq or not 'list_id_showed' in rq or not 'list_hashtag' in rq or not 'place' in rq:
+        abort(400)
+    if rq["list_id_showed"].__class__ != list or rq["list_hashtag"].__class__ != list or rq["place"].__class__ != str:
+        abort(400)
     try:
-        list_showed = [ObjectId(s.strip()) for s in request.args.get('list-id-showed', default="").split(',') if
-                       len(s.strip()) > 0]
-        hashtag = [s.strip() for s in request.args.get('list-hashtag', default="").split(',') if len(s.strip()) > 0]
-        place = request.args.get('place', default="")
+        list_showed = [ObjectId(s) for s in rq["list_id_showed"]]
+        hashtag = [h for h in rq["list_hashtag"] if h in list_hashtag]
+        if rq["place"] in list_place:
+            place = rq["place"]
+        else:
+            place = ""
     except:
         abort(400)
     if len(hashtag) == 0:

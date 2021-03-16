@@ -12,7 +12,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.1.3/socket.io.js"></script>
 <script type="text/javascript" charset="utf-8">
     var socket = io.connect('http://toptimviec-backend.herokuapp.com', {extraHeaders: {
-                Authorization: "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTU4ODk2NDksInN1YiI6eyJpZF91c2VyIjoiNjA0NzM5MDQ3MmM4YWNkNmE5YmYwN2JlIiwicm9sZSI6ImVtcGxveWVyIn0sImlzcyI6IjYwNTAyMjJiMzMyOTdjYjIxMmZjNzQwYyJ9.v0DlP3rqvMMbEb7F5OxoNFW0YXjvy0ri3Mqmwsjo3S0"
+                Authorization: "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTU4OTA5ODUsInN1YiI6eyJpZF91c2VyIjoiNjA0NzM5MDQ3MmM4YWNkNmE5YmYwN2JlIiwicm9sZSI6ImVtcGxveWVyIn0sImlzcyI6IjYwNTAyMjJiMzMyOTdjYjIxMmZjNzQwYyJ9._4Htl3ujxp-rd7mZRBz-gGHDM4tl1Z6v69_U8hQkdtg"
                 }});
     socket.on('new', function (data) {
             console.log(data);

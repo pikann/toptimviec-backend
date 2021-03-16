@@ -2,7 +2,7 @@ from flask_socketio import SocketIO, join_room
 from flask import request
 from model import Token
 
-socketio = SocketIO(async_mode='eventlet', cors_allowed_origins="*", engineio_logger=True)
+socketio = SocketIO(async_mode='eventlet', cors_allowed_origins="*", pingInterval=10000, pingTimeout=5000)
 
 
 @socketio.on('connect')

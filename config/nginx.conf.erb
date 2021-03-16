@@ -27,7 +27,12 @@ http {
 	client_body_timeout 5;
 
 	upstream app_server {
-		server unix:/tmp/nginx.socket fail_timeout=0;
+		ip_hash;
+
+        server 127.0.0.1:5000;
+        server 127.0.0.1:5001;
+        server 127.0.0.1:5002;
+        # to scale the app, just add more nodes here!
 	}
 
 	server {

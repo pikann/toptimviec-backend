@@ -1,4 +1,4 @@
-from flask import Blueprint, Flask
+from flask import Blueprint, Flask, render_template
 from pymongo import MongoClient
 import yagmail
 
@@ -22,6 +22,12 @@ from controller.list_candidate import *
 from controller.mail import *
 from controller.notification import *
 
+
 @bp.route('/')
 def index():
      return "Back-end for toptimviec"
+
+
+@bp.route('/test-socket')
+def test_socket():
+    return render_template("test.html")

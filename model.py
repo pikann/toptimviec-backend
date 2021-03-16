@@ -284,6 +284,8 @@ class Mail:
         self.attach_post = attach_post
         self.attach_cv = attach_cv
 
+    def id(self):
+        return self._id
 
 
 class List_Candidate:
@@ -293,5 +295,17 @@ class List_Candidate:
         self.employer = employer
         self.list = []
 
+    def id(self):
+        return self._id
+
+
+class Notification:
+    def __init__(self, user, type, id_attach, content, img):
+        self._id = ObjectId()
+        self.user = user
+        self.type = type
+        self.id_attach = id_attach
+        self.content = content
+        self.img = img
     def id(self):
         return self._id

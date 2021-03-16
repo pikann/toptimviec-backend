@@ -2,9 +2,10 @@ from flask import g, abort, request
 from controller import bp, db, email_form, yag
 from controller.auth import token_auth
 from bson.objectid import ObjectId
-from model import Mail
+from model import Mail, Notification
 import threading
 from jinja2 import Template
+from controller.socket import socketio
 
 
 def gmail_has_email(title, content, receiver, attach_post, attach_cv, sender, role_sender):
@@ -49,6 +50,30 @@ def gmail_has_email(title, content, receiver, attach_post, attach_cv, sender, ro
         return
 
 
+def notify_mail(id_user, role, receivers, title, id_mail):
+    global user
+    try:
+        notify_content = "Bạn có một thư mới từ "
+        if role == "employer":
+            user = db.employer.find_one({"_id": id_user}, {"_id": 0, "name": 1, "avatar": 1})
+        elif role == "applicant":
+            user = db.applicant.find_one({"_id": id_user}, {"_id": 0, "name": 1, "avatar": 1})
+        notify_content += user["name"] + ": " + title
+    except:
+        return
+
+    for receiver in receivers:
+        try:
+            notification = Notification(user=receiver, type="mail", id_attach=id_mail, content=notify_content, img=user["avatar"])
+            db.notification.insert(notification.__dict__)
+        except:
+            pass
+        try:
+            socketio.emit("new", {"type": "mail", "content": notify_content, "img": user["avatar"], "id_attach": str(id_mail)}, room=str(receiver))
+        except:
+            pass
+
+
 @bp.route('/mail', methods=['POST'])
 @token_auth.login_required()
 def send_mail():
@@ -73,6 +98,9 @@ def send_mail():
     except:
         abort(403)
     threading.Thread(target=gmail_has_email, args=(mail.title, mail.content, mail.receiver, mail.attach_post, mail.attach_cv, token.id_user, token.role,)).start()
+
+    socketio.start_background_task(target=notify_mail(token.id_user, token.role, receiver, mail.title, mail.id()))
+
     return "ok"
 
 

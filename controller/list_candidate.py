@@ -43,7 +43,7 @@ def get_my_candidate_lists():
         abort(400)
     try:
         candidate_lists=list(db.list_candidate.find({"employer": token.id_user}, {"_id": 1, "name": 1}).sort([("_id", -1)]).skip(page*10).limit(10))
-        for candidate_list in list(candidate_lists):
+        for candidate_list in candidate_lists:
             candidate_list["_id"]=str(candidate_list["_id"])
         return {"candidate_lists": candidate_lists}
     except:

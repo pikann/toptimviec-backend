@@ -1,1 +1,1 @@
-web: bin/start-nginx gunicorn -c config/gunicorn.conf.py 'run:app' -p 8080
+web: bin/start-nginx gunicorn -c config/gunicorn.conf.py 'run:app'

@@ -1,1 +1,1 @@
-web: bin/start-nginx gunicorn -c config/gunicorn.conf.py 'run:app'
+web: gunicorn --worker-class eventlet -w 3 run:app

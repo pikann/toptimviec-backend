@@ -11,8 +11,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.1.3/socket.io.js"></script>
 <script type="text/javascript" charset="utf-8">
-    var socket = io.connect('http://127.0.0.1:5000', {extraHeaders: {
-                Authorization: "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTU4ODQyMjksInN1YiI6eyJpZF91c2VyIjoiNjA0NzM5MDQ3MmM4YWNkNmE5YmYwN2JlIiwicm9sZSI6ImVtcGxveWVyIn0sImlzcyI6IjYwNTAyMjJiMzMyOTdjYjIxMmZjNzQwYyJ9.zVcu0r2kcGCOcdNhVM1qDivrVWT_n3dnKfInAZOTrYM"
+    var socket = io.connect('http://toptimviec-backend.herokuapp.com', {extraHeaders: {
+                Authorization: "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTU4ODYwNDgsInN1YiI6eyJpZF91c2VyIjoiNjA0NzM5MDQ3MmM4YWNkNmE5YmYwN2JlIiwicm9sZSI6ImVtcGxveWVyIn0sImlzcyI6IjYwNTAyMjJiMzMyOTdjYjIxMmZjNzQwYyJ9.Jfm4zXNigYK-at0aWn3M3OLsRW2ktT9U2r6b48VenUs"
                 }});
     socket.on('new', function (data) {
             console.log(data);

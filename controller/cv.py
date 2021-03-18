@@ -8,7 +8,7 @@ import threading
 from controller.learn import learn_applicant_hashtag, learn_employer_hashtag
 
 
-@bp.route('/cv', methods=['GET'])
+@bp.route('/cv-list', methods=['POST'])
 @token_auth.login_required(role="employer")
 def get_list_cv():
     global place, list_showed, hashtag

@@ -9,7 +9,7 @@ from controller.list_candidate import new_candidate_list_for_post
 from controller.learn import learn_employer_hashtag, learn_applicant_hashtag
 
 
-@bp.route('/post', methods=['GET'])
+@bp.route('/post-list', methods=['POST'])
 @token_auth.login_required(optional=True)
 def get_list_post():
     global hashtag, list_showed, place, list_post

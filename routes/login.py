@@ -1,7 +1,7 @@
 from flask import g, abort, request
-from controller import bp, db
-from controller.auth import basic_auth, token_auth
-from model import Token
+from routes import bp, db
+from routes.auth import basic_auth, token_auth
+from models.Token import Token
 from bson.objectid import ObjectId
 import datetime
 

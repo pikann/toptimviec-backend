@@ -1,13 +1,9 @@
-import base64
-import os
-
 from flask import request, abort
-from model import User, Employer
-import hashlib
-from controller import bp, db, yag, email_form
-from jinja2 import Template
+from routes import bp
 import re
 from bson.objectid import ObjectId
+from services.user import check_email
+from services.employer import create_employer, find_employer
 
 
 @bp.route("/employer", methods=['POST'])
@@ -19,27 +15,11 @@ def post_employer():
     if not re.match(r"[-a-zA-Z0-9.`?{}]+@\w+\.\w+", rq["email"]):
         abort(400)
 
-    if db.user.find_one({"email": rq["email"]}) is not None:
+    if not check_email(rq["email"]):
         abort(409)
 
     try:
-        user = User()
-        employer = Employer()
-        employer.setID(user.id())
-        user.email = rq['email']
-        user.password = hashlib.md5(rq['password'].encode('utf-8')).hexdigest()
-        user.role = "employer"
-        employer.name = rq['name']
-
-        user.validate = base64.b64encode(os.urandom(24)).decode('utf-8')
-
-        db.user.insert_one(user.__dict__)
-        db.employer.insert(employer.__dict__, check_keys=False)
-
-        mail_content = "Chào " + employer.name + ",<br>Tài khoản của bạn đã được khởi tạo thành công.<br>Xin vui lòng nhấn vào link bên dưới để hoàn tất việc đăng ký.<br>" + str(
-            user.id()) + "<br>" + user.validate
-        html_content = Template(email_form).render({"content": mail_content, "href": "#", "button_text": "Xác nhận tài khoản"})
-        yag.send(to=user.email, subject="Xác nhận tài khoản TopTimViec", contents=html_content)
+        create_employer(rq['email'], rq['password'], rq['name'])
     except:
         abort(400)
 
@@ -50,7 +30,7 @@ def post_employer():
 def get_employer(id):
     global employer
     try:
-        employer = db.employer.find_one({"_id": ObjectId(id)}, {"_id": 0, "name": 1, "bio": 1, "avatar": 1})
+        employer = find_employer(ObjectId(id))
     except:
         abort(403)
     return employer

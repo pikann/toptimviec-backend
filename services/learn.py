@@ -1,4 +1,4 @@
-from controller import db
+from services import db
 
 
 def learn_employer_hashtag(id_user, cv_hashtag):

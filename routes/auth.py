@@ -1,8 +1,8 @@
 from flask_httpauth import HTTPBasicAuth, HTTPTokenAuth
 from flask import abort, g, request
-import hashlib
-from controller import db
-from model import Token, RefreshToken
+from models.Token import Token
+from services.user import check_password
+from services.refresh_token import create_refresh_token
 
 basic_auth = HTTPBasicAuth()
 token_auth = HTTPTokenAuth()
@@ -14,16 +14,12 @@ def verify_password(username, password):
     if not rq or not "email" in rq or not "password" in rq:
         abort(400)
 
-    email = rq["email"]
-    password = rq["password"]
-
-    user = db.user.find_one({"email": email, "password": hashlib.md5(password.encode('utf-8')).hexdigest()})
+    user = check_password(rq["email"], rq["password"])
     if user is None:
         return False
     if user["validate"]!="":
         abort(405)
-    refreshToken=RefreshToken(user["_id"], user["role"])
-    db.refresh_token.insert_one(refreshToken.__dict__)
+    refreshToken=create_refresh_token(user["_id"], user["role"])
     g.refresh_token = refreshToken
     g.current_token = Token(refreshToken.id_user, refreshToken.role, refreshToken.id())
     return True

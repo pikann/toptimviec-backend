@@ -1,4 +1,4 @@
-from controller import bp, list_hashtag, list_place
+from routes import bp, list_hashtag, list_place
 
 @bp.route('/list-hashtag', methods=['GET'])
 def get_list_hashtag():

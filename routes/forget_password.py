@@ -3,7 +3,7 @@ import os
 
 from flask import request, abort
 import hashlib
-from controller import bp, db, yag, email_form
+from routes import bp, db, yag, email_form
 from jinja2 import Template
 import datetime
 from bson.objectid import ObjectId

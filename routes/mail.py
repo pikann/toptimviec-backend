@@ -1,11 +1,12 @@
 from flask import g, abort, request
-from controller import bp, db, email_form, yag
-from controller.auth import token_auth
+from routes import bp, db, email_form, yag
+from routes.auth import token_auth
 from bson.objectid import ObjectId
-from model import Mail, Notification
+from models.Mail import Mail
+from models.Notification import Notification
 import threading
 from jinja2 import Template
-from controller.socket import socketio
+from routes.socket import socketio
 
 
 def gmail_has_email(title, content, receiver, attach_post, attach_cv, sender, role_sender):

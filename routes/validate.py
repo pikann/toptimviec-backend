@@ -1,4 +1,4 @@
-from controller import bp, db
+from routes import bp, db
 from flask import request, abort
 from bson.objectid import ObjectId
 

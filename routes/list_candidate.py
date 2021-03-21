@@ -1,8 +1,8 @@
 from flask import g, abort, request
-from controller import bp, db
-from controller.auth import token_auth
+from routes import bp, db
+from routes.auth import token_auth
 from bson.objectid import ObjectId
-from model import List_Candidate
+from models.List_Candidate import List_Candidate
 
 
 def new_candidate_list_for_post(name, id_user):

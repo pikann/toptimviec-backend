@@ -1,12 +1,12 @@
 from flask import g, abort, request, make_response
-from controller import bp, db, list_hashtag, list_place
-from controller.auth import token_auth
+from routes import bp, db, list_hashtag, list_place
+from routes.auth import token_auth
 from bson.objectid import ObjectId
 import datetime
-from model import Post
+from models.Post import Post
 import threading
-from controller.list_candidate import new_candidate_list_for_post
-from controller.learn import learn_employer_hashtag, learn_applicant_hashtag
+from routes.list_candidate import new_candidate_list_for_post
+from services.learn import learn_employer_hashtag, learn_applicant_hashtag
 
 
 @bp.route('/post', methods=['GET'])

@@ -1,7 +1,7 @@
 from bson import ObjectId
 from flask import request, abort, g
-from controller import bp, db
-from controller.auth import token_auth
+from routes import bp, db
+from routes.auth import token_auth
 
 
 @bp.route('/notification', methods=['GET'])

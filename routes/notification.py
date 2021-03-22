@@ -1,7 +1,8 @@
 from bson import ObjectId
 from flask import request, abort, g
-from routes import bp, db
-from routes.auth import token_auth
+from routes import bp
+from services.auth import token_auth
+from services.notification import get_list_notification
 
 
 @bp.route('/notification', methods=['GET'])
@@ -18,10 +19,7 @@ def get_list_notify():
     except:
         abort(400)
     try:
-        list_notify = list(db.notification.find({"user": token.id_user, "_id": {"$not": {"$in": list_showed}}}, {"user": 0}).sort([("_id", -1)]).limit(10))
-        for notify in list_notify:
-            notify["id_attach"] = str(notify["id_attach"])
-            notify["_id"] = str(notify["_id"])
+        list_notify = get_list_notification(token.id_user, list_showed)
         return {"list_notify": list_notify}
     except:
         abort(403)

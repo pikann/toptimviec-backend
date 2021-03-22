@@ -1,5 +1,5 @@
 from bson.objectid import ObjectId
-from routes import list_hashtag
+from services.global_data import list_hashtag
 import datetime
 
 

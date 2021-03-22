@@ -28,5 +28,5 @@ def create_employer(email, password, name):
     yag.send(to=user.email, subject="Xác nhận tài khoản TopTimViec", contents=html_content)
 
 
-def find_employer(id):
-    return db.employer.find_one({"_id": id}, {"_id": 0, "name": 1, "bio": 1, "avatar": 1})
+def get_employer_by_id(id_user, attribute):
+    return db.employer.find_one({"_id": id_user}, attribute)

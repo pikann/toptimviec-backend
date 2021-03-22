@@ -28,3 +28,7 @@ def create_applicant(email, password, name, gender, dob):
     html_content = Template(email_form).render(
         {"content": mail_content, "href": "#", "button_text": "Xác nhận tài khoản"})
     yag.send(to=user.email, subject="Xác nhận tài khoản TopTimViec", contents=html_content)
+
+
+def get_applicant_by_id(id_user, attribute):
+    return db.applicant.find_one({"_id": id_user}, attribute)

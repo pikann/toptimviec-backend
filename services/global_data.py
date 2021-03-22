@@ -13,3 +13,7 @@ def check_place(place):
         return place
     else:
         return ""
+
+
+def check_list_place(places):
+    return [p for p in places if p in list_place]

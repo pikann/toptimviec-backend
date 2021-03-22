@@ -1,6 +1,6 @@
 from flask import g, abort, request
 from routes import bp
-from routes.auth import token_auth
+from services.auth import token_auth
 from bson.objectid import ObjectId
 import datetime
 import threading
@@ -9,7 +9,7 @@ from services.global_data import check_list_hashtag, check_place
 from services.cv import recommend_cv, find_list_cv, find_cv, check_skill, check_content, create_cv, update_cv, delete_cv
 
 
-@bp.route('/cv', methods=['GET'])
+@bp.route('/cv-list', methods=['POST'])
 @token_auth.login_required(role="employer")
 def get_list_cv():
     global place, list_showed, hashtag

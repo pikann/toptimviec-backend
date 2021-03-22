@@ -3,6 +3,7 @@ from flask import abort, g, request
 from models.Token import Token
 from services.user import check_password
 from services.refresh_token import create_refresh_token
+from services.token import check_token
 
 basic_auth = HTTPBasicAuth()
 token_auth = HTTPTokenAuth()
@@ -32,7 +33,7 @@ def basic_auth_error():
 
 @token_auth.verify_token
 def verify_token(key):
-    g.current_token = Token.check_token(key) if key else None
+    g.current_token = check_token(key) if key else None
     return g.current_token is not None
 
 
@@ -45,3 +46,5 @@ def token_auth_error():
 def get_user_roles(user):
     token = g.current_token
     return token.role
+
+

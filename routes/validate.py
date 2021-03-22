@@ -1,6 +1,7 @@
-from routes import bp, db
+from routes import bp
 from flask import request, abort
 from bson.objectid import ObjectId
+from services.user import get_uset_by_validate_key, update_validate
 
 @bp.route("/validate", methods=['PUT'])
 def validate_user():
@@ -10,13 +11,13 @@ def validate_user():
         abort(400)
 
     try:
-        user=db.user.find_one({"_id": ObjectId(rq["id"]), "validate": rq["key"]})
+        user=get_uset_by_validate_key(ObjectId(rq["id"]), rq["key"])
     except:
         abort(403)
 
     if user is not None:
         try:
-            db.user.update_one({"_id": ObjectId(rq["id"])}, {"$set": {"validate": ""}})
+            update_validate(ObjectId(rq["id"]))
         except:
             abort(403)
         return "ok"

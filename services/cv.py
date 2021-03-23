@@ -164,3 +164,10 @@ def update_cv(id_cv, db_cv, name, gender, avatar, position, dob, address, email,
 
 def delete_cv(id_cv):
     db.cv.delete_one({"_id": id_cv})
+
+
+def get_list_cv_by_id_applicant(id_applicant, page):
+    list_cv=list(db.cv.find({"applicant": id_applicant}, {"avatar":1, "hashtag": 1, "name": 1, "place": 1, "position": 1}).sort([("_id", -1)]).skip(page*10).limit(10))
+    for cv in list_cv:
+        cv["_id"]=str(cv["_id"])
+    return list_cv

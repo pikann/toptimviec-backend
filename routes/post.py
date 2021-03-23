@@ -6,7 +6,7 @@ import datetime
 import threading
 from services.learn import learn_employer_hashtag, learn_applicant_hashtag
 from services.global_data import check_place, check_list_hashtag, check_list_place
-from services.post import recommend_post, search_post, get_all_post, get_post_info, new_post, find_post, update_post, delete_post
+from services.post import recommend_post, search_post, get_all_post, get_post_info, new_post, find_post, update_post, delete_post_by_id
 from services.list_candidate import create_candidate_list_for_post
 
 
@@ -167,7 +167,7 @@ def delete_post(id):
     if db_post["employer"] != token.id_user:
         abort(405)
 
-    delete_post(ObjectId(id))
+    delete_post_by_id(ObjectId(id))
     return "ok"
 
 

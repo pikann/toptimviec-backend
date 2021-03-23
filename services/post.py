@@ -239,5 +239,5 @@ def update_post(db_post, id_post, title, description, request, benefit, place, s
     db.post.update_one({"_id": id_post}, {"$set": post.__dict__})
 
 
-def delete_post(id_post):
+def delete_post_by_id(id_post):
     db.post.delete_one({"_id": id_post})

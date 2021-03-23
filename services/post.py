@@ -25,7 +25,8 @@ def get_post_of_employer(id, page):
                                         {"$unwind": "$employer"},
                                         {"$project": {
                                             "employer.bio": 0,
-                                            "employer.url": 0
+                                            "employer.url": 0,
+                                            "employer.hashtag": 0
                                         }},
                                         {"$set": {
                                             "employer._id": {"$toString": "$employer._id"}

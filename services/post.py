@@ -218,7 +218,9 @@ def new_post(title, description, request, benefit, place, salary, deadline, hash
     return post.id()
 
 
-def find_post(id_post, attribute={}):
+def find_post(id_post, attribute=None):
+    if attribute is None:
+        return db.post.find_one({"_id": id_post})
     return db.post.find_one({"_id": id_post}, attribute)
 
 

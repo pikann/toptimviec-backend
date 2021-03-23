@@ -98,7 +98,7 @@ def post_post():
     except:
         abort(403)
 
-    threading.Thread(target=create_candidate_list_for_post, args=(token.id_user, post.title,)).start()
+    threading.Thread(target=create_candidate_list_for_post, args=(token.id_user, rq["title"],)).start()
     threading.Thread(target=learn_employer_hashtag, args=(token.id_user, hashtag,)).start()
 
     return {"id_post": str(id_post)}

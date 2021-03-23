@@ -30,5 +30,7 @@ def create_applicant(email, password, name, gender, dob):
     yag.send(to=user.email, subject="Xác nhận tài khoản TopTimViec", contents=html_content)
 
 
-def get_applicant_by_id(id_user, attribute):
+def get_applicant_by_id(id_user, attribute=None):
+    if attribute is None:
+        return db.applicant.find_one({"_id": id_user})
     return db.applicant.find_one({"_id": id_user}, attribute)

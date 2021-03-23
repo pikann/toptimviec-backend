@@ -77,7 +77,9 @@ def find_list_cv(list_showed, hashtag, place):
     return list(db.cv.aggregate(db_request))
 
 
-def find_cv(id, attribute={}):
+def find_cv(id, attribute=None):
+    if attribute is None:
+        return db.cv.find_one({"_id": id})
     return db.cv.find_one({"_id": id}, attribute)
 
 

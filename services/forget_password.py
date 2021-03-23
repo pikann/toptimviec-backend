@@ -20,7 +20,7 @@ def send_forget_key(id_user, email):
 
 
 def check_forget_key(id_user, key):
-    return db.forget_key.find_one({"id_user": id_user, "key": key}) is not None
+    return db.forget_key.find_one({"id_user": id_user, "key": key, "expiration": {"$gte": datetime.datetime.utcnow()}}) is not None
 
 
 def reset_password_with_forget_key(id_user, password, key):

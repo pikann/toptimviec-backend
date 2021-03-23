@@ -10,7 +10,9 @@ def check_password(email, password):
     return db.user.find_one({"email": email, "password": hashlib.md5(password.encode('utf-8')).hexdigest()})
 
 
-def get_user_by_email(email, attribute):
+def get_user_by_email(email, attribute=None):
+    if attribute is None:
+        return db.user.find_one({"email": email})
     return db.user.find_one({"email": email}, attribute)
 
 

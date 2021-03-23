@@ -5,7 +5,7 @@ from services.auth import token_auth
 from services.notification import get_list_notification
 
 
-@bp.route('/notification', methods=['GET'])
+@bp.route('/notification', methods=['POST'])
 @token_auth.login_required()
 def get_list_notify():
     token = g.current_token

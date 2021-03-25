@@ -14,7 +14,6 @@ class Post:
             self.place = []
             self.salary = ""
             self.deadline = datetime.datetime.now()
-            self.url = ""
             self.hashtag = []
             self.address = ""
         else:
@@ -27,7 +26,6 @@ class Post:
             self.place = dict["place"]
             self.salary = dict["salary"]
             self.deadline = dict["deadline"]
-            self.url = dict["url"]
             self.hashtag = dict["hashtag"]
             self.address = dict["address"]
 

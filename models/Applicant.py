@@ -11,9 +11,6 @@ class Applicant:
         self.avatar = ""
         self.dob = datetime.datetime.now()
         self.place = ""
-        self.list_CV = []
-        self.main_CV = ObjectId()
-        self.url = ""
         self.hashtag = {h: 0 for h in list_hashtag}
 
     def id(self):

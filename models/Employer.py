@@ -8,7 +8,6 @@ class Employer:
         self.name = ""
         self.bio = ""
         self.avatar = ""
-        self.url = ""
         self.hashtag = {h: 0 for h in list_hashtag}
 
     def id(self):

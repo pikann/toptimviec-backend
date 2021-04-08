@@ -25,7 +25,6 @@ def get_post_of_employer(id, page):
                                         {"$unwind": "$employer"},
                                         {"$project": {
                                             "employer.bio": 0,
-                                            "employer.url": 0,
                                             "employer.hashtag": 0
                                         }},
                                         {"$set": {
@@ -83,7 +82,6 @@ def recommend_post(id_user, list_showed, place):
                    {"$unwind": "$employer"},
                    {"$project": {
                        "employer.bio": 0,
-                       "employer.url": 0,
                        "count_find": 0,
                        "count_hashtag": 0
                    }},
@@ -137,7 +135,6 @@ def search_post(list_showed, place, hashtag):
                    {"$unwind": "$employer"},
                    {"$project": {
                        "employer.bio": 0,
-                       "employer.url": 0,
                        "count_find": 0
                    }},
                    {"$unwind": "$hashtag"},
@@ -172,8 +169,7 @@ def get_all_post(list_showed, place):
                    }},
                    {"$unwind": "$employer"},
                    {"$project": {
-                       "employer.bio": 0,
-                       "employer.url": 0
+                       "employer.bio": 0
                    }},
                    {"$set": {
                        "employer._id": {"$toString": "$employer._id"}
@@ -191,8 +187,6 @@ def get_post_info(id_post):
                                    }},
                                    {"$unwind": "$employer"},
                                    {"$project": {
-                                       "url": 0,
-                                       "employer.url": 0,
                                        "employer.bio": 0
                                    }},
                                    {"$set": {

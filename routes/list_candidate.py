@@ -3,7 +3,7 @@ from routes import bp
 from services.auth import token_auth
 from bson.objectid import ObjectId
 from services.list_candidate import create_candidate_list, get_list_my_list_candidate, add_candidate, \
-    get_candidate_list, update_list_name, delete_list, remove_candidate
+    get_candidate_list, update_list_name, delete_list, remove_candidate, count_page_list_my_list_candidate
 
 
 @bp.route('/list-candidate', methods=['POST'])
@@ -36,7 +36,8 @@ def get_my_candidate_lists():
         candidate_lists = get_list_my_list_candidate(token.id_user, page)
         for candi_list in candidate_lists:
             candi_list["_id"] = str(candi_list["_id"])
-        return {"candidate_lists": candidate_lists}
+        count = count_page_list_my_list_candidate(token.id_user)
+        return {"candidate_lists": candidate_lists, "page": count}
     except:
         abort(403)
 
@@ -97,6 +98,7 @@ def delete_list_candidate(id):
 @bp.route('/list-candidate/<id>/<id_cv>', methods=['DELETE'])
 @token_auth.login_required(role="employer")
 def delete_cv_from_list_candidate(id, id_cv):
+    global rs
     token = g.current_token
     try:
         rs = remove_candidate(ObjectId(id), token.id_user, ObjectId(id_cv))

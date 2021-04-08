@@ -1,5 +1,6 @@
 from services import db
 from models.List_Candidate import List_Candidate
+import math
 
 
 def create_candidate_list(id_user, name):
@@ -20,6 +21,10 @@ def create_candidate_list_for_post(id_user, name):
 
 def get_list_my_list_candidate(id_user, page):
     return list(db.list_candidate.find({"employer": id_user}, {"_id": 1, "name": 1}).sort([("_id", -1)]).skip(page * 10).limit(10))
+
+
+def count_page_list_my_list_candidate(id_user):
+    return math.ceil(db.list_candidate.find({"employer": id_user}).count()/10)
 
 
 def add_candidate(id_list, id_user, id_cv):

@@ -20,7 +20,7 @@ def new_candidate_list():
         id_list = create_candidate_list(token.id_user, rq["name"])
     except:
         abort(403)
-    return {"id": str(id_list)}
+    return get_my_candidate_lists()
 
 
 @bp.route('/list-candidate', methods=['GET'])
@@ -78,7 +78,7 @@ def change_name_list_candidate(id):
         update_list_name(ObjectId(id), token.id_user, rq["name"])
     except:
         abort(404)
-    return "ok"
+    return get_my_candidate_lists()
 
 
 @bp.route('/list-candidate/<id>', methods=['DELETE'])

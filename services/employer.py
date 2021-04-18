@@ -21,10 +21,9 @@ def create_employer(email, password, name):
     db.user.insert_one(user.__dict__)
     db.employer.insert(employer.__dict__, check_keys=False)
 
-    mail_content = "Chào " + employer.name + ",<br>Tài khoản của bạn đã được khởi tạo thành công.<br>Xin vui lòng nhấn vào link bên dưới để hoàn tất việc đăng ký.<br>" + str(
-        user.id()) + "<br>" + user.validate
+    mail_content = "Chào " + employer.name + ",<br>Tài khoản của bạn đã được khởi tạo thành công.<br>Xin vui lòng nhấn vào link bên dưới để hoàn tất việc đăng ký."
     html_content = Template(email_form).render(
-        {"content": mail_content, "href": "#", "button_text": "Xác nhận tài khoản"})
+        {"content": mail_content, "href": "http://toptimviec.herokuapp.com/dang-ky/xac-nhan-email?id=" + str(user.id()) + "&key=" + user.validate, "button_text": "Xác nhận tài khoản"})
     yag.send(to=user.email, subject="Xác nhận tài khoản TopTimViec", contents=html_content)
 
 

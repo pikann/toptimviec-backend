@@ -58,11 +58,11 @@ def get_post(id):
         post = get_post_info(ObjectId(id))
     except:
         abort(403)
-    if len(post) == 0:
+    if post is None:
         abort(404)
     if g.current_token is not None:
         threading.Thread(target=learn_applicant_hashtag, args=(g.current_token.id_user, post[0]["hashtag"],)).start()
-    return {"post": post[0]}
+    return {"post": post}
 
 
 @bp.route('/post', methods=['POST'])

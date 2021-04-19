@@ -92,7 +92,7 @@ def recommend_post(id_user, list_showed, place):
     return list(db.applicant.aggregate(db_request))
 
 
-def search_post(list_showed, place, hashtag):
+def search_post(list_showed, place, hashtag, limit = 20):
     db_request = [{"$match": {"_id": {"$not": {"$in": list_showed}}}},
                   {"$match": {"deadline": {"$gt": datetime.datetime.utcnow()}}}]
     if place != "":
@@ -119,7 +119,7 @@ def search_post(list_showed, place, hashtag):
                        "count_find": {"$sum": 1}}
                    },
                    {"$sort": {"count_find": -1, "count_hashtag": 1, "_id": -1}},
-                   {"$limit": 20},
+                   {"$limit": limit},
                    {"$lookup": {
                        "from": "employer",
                        "localField": "employer",
@@ -178,21 +178,25 @@ def get_all_post(list_showed, place):
 
 
 def get_post_info(id_post):
-    return list(db.post.aggregate([{"$match": {"_id": id_post}},
-                                   {"$lookup": {
-                                       "from": "employer",
-                                       "localField": "employer",
-                                       "foreignField": "_id",
-                                       "as": "employer"
-                                   }},
-                                   {"$unwind": "$employer"},
-                                   {"$project": {
-                                       "employer.bio": 0
-                                   }},
-                                   {"$set": {
-                                       "employer._id": {"$toString": "$employer._id"},
-                                       "_id": {"$toString": "$_id"}
-                                   }}]))
+    post = list(db.post.aggregate([{"$match": {"_id": id_post}},
+                                 {"$lookup": {
+                                     "from": "employer",
+                                     "localField": "employer",
+                                     "foreignField": "_id",
+                                     "as": "employer"
+                                 }},
+                                 {"$unwind": "$employer"},
+                                 {"$set": {
+                                     "employer._id": {"$toString": "$employer._id"},
+                                     "_id": {"$toString": "$_id"}
+                                 }}]))
+    if len(post) == 0:
+        return None
+    rs = post[0]
+    if len(rs["employer"]["bio"]) > 250:
+        rs["employer"]["bio"] = rs["employer"]["bio"][:250] + "..."
+    rs["recommend"] = search_post([rs["_id"]], rs["place"], rs["hashtag"], 10)
+    return rs
 
 
 def new_post(title, description, request, benefit, place, salary, deadline, hashtag, address, id_user):

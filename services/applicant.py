@@ -17,7 +17,7 @@ def create_applicant(email, password, name, gender, dob):
     user.role = "applicant"
     applicant.name = name
     applicant.gender = gender
-    applicant.dob = datetime.datetime.strptime(dob, '%d/%m/%Y')
+    applicant.dob = datetime.datetime.strptime(dob)
 
     user.validate = base64.b64encode(os.urandom(24)).decode('utf-8')
 

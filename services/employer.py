@@ -29,3 +29,22 @@ def create_employer(email, password, name):
 
 def get_employer_by_id(id_user, attribute):
     return db.employer.find_one({"_id": id_user}, attribute)
+
+
+def update_employer_profile(id_user, name, bio):
+    db.employer.update_one(
+        {"_id": id_user},
+        {"$set": {
+            "name": name,
+            "bio": bio
+        }}
+    )
+
+
+def update_employer_avatar(id_user, avatar):
+    db.employer.update_one(
+        {"_id": id_user},
+        {"$set": {
+            "avatar": avatar
+        }}
+    )

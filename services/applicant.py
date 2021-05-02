@@ -17,7 +17,7 @@ def create_applicant(email, password, name, gender, dob):
     user.role = "applicant"
     applicant.name = name
     applicant.gender = gender
-    applicant.dob = datetime.datetime.strptime(dob)
+    applicant.dob = datetime.datetime.strptime(dob, "%Y-%m-%dT%H:%M:%S.%fZ")
 
     user.validate = base64.b64encode(os.urandom(24)).decode('utf-8')
 
@@ -34,3 +34,24 @@ def get_applicant_by_id(id_user, attribute=None):
     if attribute is None:
         return db.applicant.find_one({"_id": id_user})
     return db.applicant.find_one({"_id": id_user}, attribute)
+
+
+def update_applicant_profile(id_user, name, gender, dob, place):
+    db.applicant.update_one(
+        {"_id": id_user},
+        {"$set": {
+            "name": name,
+            "gender": gender,
+            "dob": datetime.datetime.strptime(dob, "%Y-%m-%dT%H:%M:%S.%fZ"),
+            "place": place
+        }}
+    )
+
+
+def update_applicant_avatar(id_user, avatar):
+    db.applicant.update_one(
+        {"_id": id_user},
+        {"$set": {
+            "avatar": avatar
+        }}
+    )

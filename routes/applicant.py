@@ -7,8 +7,12 @@ import re
 
 @bp.route("/applicant", methods=['POST'])
 def post_applicant():
-    rq=request.json
+    rq = request.json
     if not rq or not 'email' in rq or not 'password' in rq or not "name" in rq or not "gender" in rq or not "dob" in rq:
+        abort(400)
+
+    if rq["email"].__class__ != str or rq["password"].__class__ != str or rq["name"].__class__ != str or rq[
+        "gender"].__class__ != bool or rq["dob"].__class__ != str:
         abort(400)
 
     if not re.match(r"[-a-zA-Z0-9.`?{}]+@\w+\.\w+", rq["email"]):

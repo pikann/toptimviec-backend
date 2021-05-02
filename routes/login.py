@@ -41,24 +41,6 @@ def logout():
         abort(403)
 
 
-@bp.route('/info', methods=['GET'])
-@token_auth.login_required
-def info():
-    token = g.current_token
-    try:
-        if token.role == "applicant":
-            applicant=get_applicant_by_id(token.id_user, {"_id": 0, "name": 1, "avatar": 1})
-            return {"id_user": str(token.id_user), "role": token.role,
-                    "name": applicant["name"], "avatar": applicant["avatar"]}
-        if token.role == "employer":
-            employer=get_employer_by_id(token.id_user, {"_id": 0, "name": 1, "avatar": 1})
-            return {"id_user": str(token.id_user), "role": token.role,
-                    "name": employer["name"], "avatar": employer["avatar"]}
-        abort(401)
-    except:
-        abort(403)
-
-
 @bp.route('/token', methods=['GET'])
 def get_token():
     refresh_token = request.args.get('refresh-token')

@@ -3,8 +3,23 @@ from routes import bp
 import re
 from bson.objectid import ObjectId
 from services.user import check_email
-from services.employer import create_employer, get_employer_by_id
+from services.employer import create_employer, get_employer_by_id, list_employer
 from services.post import get_post_of_employer
+
+
+@bp.route("/employer", methods=['GET'])
+def get_list_employer():
+    global page, name
+    try:
+        name = str(request.args.get('name', default=""))
+        page = int(request.args.get('page', default=0))
+    except:
+        abort(400)
+
+    try:
+        return {"list_employer": list_employer(name, page)}
+    except:
+        abort(403)
 
 
 @bp.route("/employer", methods=['POST'])

@@ -7,6 +7,15 @@ from services import db, email_form, yag
 from jinja2 import Template
 
 
+def list_employer(name, page):
+    employers = list(db.employer.find({"name": {'$regex': name}}, {"name": 1, "avatar": 1, "bio": 1}).sort([("_id", 1)]).skip(page * 10).limit(10))
+    for employer in employers:
+        employer["_id"] = str(employer["_id"])
+        if len(employer["bio"]) > 100:
+            employer["bio"] = employer["bio"][:100] + "..."
+    return employers
+
+
 def create_employer(email, password, name):
     user = User()
     employer = Employer()

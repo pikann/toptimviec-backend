@@ -8,6 +8,7 @@ class User:
         self.password = ""
         self.role = ""
         self.validate = ""
+        self.ban = False
 
     def id(self):
         return self._id

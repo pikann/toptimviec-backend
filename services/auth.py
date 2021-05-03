@@ -16,11 +16,15 @@ def verify_password(username, password):
         abort(400)
 
     user = check_password(rq["email"], rq["password"])
+
     if user is None:
         return False
-    if user["validate"]!="":
+    if user["validate"] != "":
         abort(405)
-    refreshToken=create_refresh_token(user["_id"], user["role"])
+    if user["ban"]:
+        abort(412)
+
+    refreshToken = create_refresh_token(user["_id"], user["role"])
     g.refresh_token = refreshToken
     g.current_token = Token(refreshToken.id_user, refreshToken.role, refreshToken.id())
     return True

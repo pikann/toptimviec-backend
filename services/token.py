@@ -44,3 +44,8 @@ def check_token(key):
     if token is None or token.token_expiration < datetime.datetime.utcnow():
         return None
     return token
+
+
+def revoke_token_user(id_user):
+    token_expiration = datetime.datetime.utcnow() - datetime.timedelta(seconds=1)
+    db.refresh_token.update_many({"id_user": id_user}, {"$set": {"token_expiration": token_expiration}})

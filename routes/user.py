@@ -1,10 +1,12 @@
 from flask import g, abort, request
+from bson.objectid import ObjectId
 from routes import bp
 from services.auth import token_auth
 from services.applicant import get_applicant_by_id, update_applicant_profile, update_applicant_avatar
 from services.employer import get_employer_by_id, update_employer_profile, update_employer_avatar
 from services.global_data import check_place
-from services.user import reset_password
+from services.user import reset_password, ban_user, unban_user
+from services.token import revoke_token_user
 
 
 @bp.route('/info', methods=['GET'])
@@ -121,3 +123,24 @@ def reset_password_route():
         return "ok"
     else:
         abort(412)
+
+
+@bp.route('/user/<id>/ban', methods=['PUT'])
+@token_auth.login_required(role="admin")
+def ban(id):
+    try:
+        ban_user(ObjectId(id))
+        revoke_token_user(ObjectId(id))
+    except:
+        abort(403)
+    return "ok"
+
+
+@bp.route('/user/<id>/unban', methods=['PUT'])
+@token_auth.login_required(role="admin")
+def unban(id):
+    try:
+        unban_user(ObjectId(id))
+    except:
+        abort(403)
+    return "ok"

@@ -1,9 +1,11 @@
-from services import db, yag, email_form
+from services import db, smtp, email_form
 import base64
 import os
 import datetime
 from jinja2 import Template
 import hashlib
+from email.mime.text import MIMEText
+from email.header import Header
 
 
 def send_forget_key(id_user, email):
@@ -16,7 +18,10 @@ def send_forget_key(id_user, email):
     html_content = Template(email_form).render(
         {"content": mail_content, "href": "#", "button_text": "Đặt lại mật khẩu"})
 
-    yag.send(to=email, subject="Link thay đổi mật khẩu TopTimViec", contents=html_content)
+    msg = MIMEText(html_content, 'html', 'utf-8')
+    msg['Subject'] = Header("Link thay đổi mật khẩu TopTimViec", 'utf-8')
+
+    smtp.sendmail('toptimviec@gmail.com', email, msg.as_string())
 
 
 def check_forget_key(id_user, key):

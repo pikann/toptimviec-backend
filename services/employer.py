@@ -3,8 +3,10 @@ from models.Employer import Employer
 import hashlib
 import base64
 import os
-from services import db, email_form, yag
+from services import db, email_form, smtp
 from jinja2 import Template
+from email.mime.text import MIMEText
+from email.header import Header
 
 
 def list_employer(name, page):
@@ -33,7 +35,11 @@ def create_employer(email, password, name):
     mail_content = "Chào " + employer.name + ",<br>Tài khoản của bạn đã được khởi tạo thành công.<br>Xin vui lòng nhấn vào link bên dưới để hoàn tất việc đăng ký."
     html_content = Template(email_form).render(
         {"content": mail_content, "href": "http://toptimviec.herokuapp.com/dang-ky/xac-nhan-email?id=" + str(user.id()) + "&key=" + user.validate, "button_text": "Xác nhận tài khoản"})
-    yag.send(to=user.email, subject="Xác nhận tài khoản TopTimViec", contents=html_content)
+
+    msg = MIMEText(html_content, 'html', 'utf-8')
+    msg['Subject'] = Header("Xác nhận tài khoản TopTimViec", 'utf-8')
+
+    smtp.sendmail('toptimviec@gmail.com', user.email, msg.as_string())
 
 
 def get_employer_by_id(id_user, attribute):

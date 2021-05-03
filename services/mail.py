@@ -1,9 +1,11 @@
 import threading
 from jinja2 import Template
 from routes.socket import socketio
-from services import db, email_form, yag
+from services import db, email_form, smtp
 from models.Mail import Mail
 from services.notification import notify_mail
+from email.mime.text import MIMEText
+from email.header import Header
 
 
 def gmail_has_email(title, content, receiver, attach_post, attach_cv, sender, role_sender):
@@ -43,7 +45,11 @@ def gmail_has_email(title, content, receiver, attach_post, attach_cv, sender, ro
                         </table>\
                         <br>"+content
         html_content = Template(email_form).render({"content": mail_content, "href": "#", "button_text": "Xem chi tiết"})
-        yag.send(to=receiver_emails, subject="[TopTimViec]"+title, contents=html_content)
+
+        msg = MIMEText(html_content, 'html', 'utf-8')
+        msg['Subject'] = Header("[TopTimViec]"+title, 'utf-8')
+
+        smtp.sendmail('toptimviec@gmail.com', receiver_emails, msg.as_string())
     except:
         return
 

@@ -34,3 +34,11 @@ def reset_password(id_user, old_password, new_password):
         {"$set": {"password": hashlib.md5(new_password.encode('utf-8')).hexdigest()}}
     )
     return rs.matched_count
+
+
+def ban_user(id_user):
+    db.user.update_one({"_id": id_user}, {"$set": {"ban": True}})
+
+
+def unban_user(id_user):
+    db.user.update_one({"_id": id_user}, {"$set": {"ban": False}})

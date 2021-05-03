@@ -26,6 +26,9 @@ def login():
             employer = get_employer_by_id(token.id_user, {"_id": 0, "name": 1, "avatar": 1})
             return {"token": encode(token), "refresh_token": refreshToken.show_key(), "id_user": str(token.id_user), "role": user["role"],
                     "name": employer["name"], "avatar": employer["avatar"]}
+        if user["role"] == "admin":
+            return {"token": encode(token), "refresh_token": refreshToken.show_key(), "id_user": str(token.id_user), "role": user["role"],
+                    "name": "Admin", "avatar": "https://res.cloudinary.com/pikann22/image/upload/v1613642165/toptimviec/LogoMakr-87TXng_pnsj0a.png"}
         abort(403)
     except:
         abort(403)

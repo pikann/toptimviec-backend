@@ -29,17 +29,21 @@ def create_employer(email, password, name):
 
     user.validate = base64.b64encode(os.urandom(24)).decode('utf-8')
 
-    db.user.insert_one(user.__dict__)
-    db.employer.insert(employer.__dict__, check_keys=False)
-
     mail_content = "Chào " + employer.name + ",<br>Tài khoản của bạn đã được khởi tạo thành công.<br>Xin vui lòng nhấn vào link bên dưới để hoàn tất việc đăng ký."
     html_content = Template(email_form).render(
-        {"content": mail_content, "href": "http://toptimviec.herokuapp.com/dang-ky/xac-nhan-email?id=" + str(user.id()) + "&key=" + user.validate, "button_text": "Xác nhận tài khoản"})
+        {"content": mail_content, "href": "http://toptimviec.herokuapp.com/dang-ky/xac-nhan-email?id=" + str(
+            user.id()) + "&key=" + user.validate, "button_text": "Xác nhận tài khoản"})
 
     msg = MIMEText(html_content, 'html', 'utf-8')
     msg['Subject'] = Header("Xác nhận tài khoản TopTimViec", 'utf-8')
 
-    smtp.sendmail('toptimviec@gmail.com', user.email, msg.as_string())
+    try:
+        smtp.sendmail('toptimviec@gmail.com', user.email, msg.as_string())
+    except:
+        smtp.sendmail('toptimviec@gmail.com', user.email, msg.as_string())
+
+    db.user.insert_one(user.__dict__)
+    db.employer.insert(employer.__dict__, check_keys=False)
 
 
 def get_employer_by_id(id_user, attribute):

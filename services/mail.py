@@ -49,7 +49,10 @@ def gmail_has_email(title, content, receiver, attach_post, attach_cv, sender, ro
         msg = MIMEText(html_content, 'html', 'utf-8')
         msg['Subject'] = Header("[TopTimViec]"+title, 'utf-8')
 
-        smtp.sendmail('toptimviec@gmail.com', receiver_emails, msg.as_string())
+        try:
+            smtp.sendmail('toptimviec@gmail.com', receiver_emails, msg.as_string())
+        except:
+            smtp.sendmail('toptimviec@gmail.com', receiver_emails, msg.as_string())
     except:
         return
 

@@ -1,3 +1,5 @@
+import datetime
+
 from bson.objectid import ObjectId
 
 
@@ -6,6 +8,7 @@ class Mail:
         self._id = ObjectId()
         self.title = title
         self.content = content
+        self.sent_date = datetime.datetime.utcnow()
         self.sender = sender
         self.receiver = receiver
         self.attach_post = attach_post

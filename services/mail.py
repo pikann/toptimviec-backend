@@ -66,11 +66,11 @@ def add_mail(id_user, receiver, title, content, attach_post, attach_cv, role):
 
 
 def get_my_list_mail(id_user, page):
-    return list(db.mail.find({"receiver": id_user}, {"title": 1}).sort([("_id", -1)]).skip(page*10).limit(10))
+    return list(db.mail.find({"receiver": id_user}, {"title": 1, "sent_date": 1}).sort([("_id", -1)]).skip(page*10).limit(10))
 
 
 def get_my_list_mail_send(id_user, page):
-    return list(db.mail.find({"sender": id_user}, {"title": 1}).sort([("_id", -1)]).skip(page*10).limit(10))
+    return list(db.mail.find({"sender": id_user}, {"title": 1, "sent_date": 1}).sort([("_id", -1)]).skip(page*10).limit(10))
 
 
 def find_mail(id_mail):
@@ -78,7 +78,7 @@ def find_mail(id_mail):
 
 
 def get_mail_info(mail):
-    rs = {"_id": str(mail["_id"]), "title": mail["title"], "content": mail["content"], "attact_post": None,
+    rs = {"_id": str(mail["_id"]), "title": mail["title"], "content": mail["content"], "sent_date": mail["sent_date"], "attact_post": None,
           "attach_cv": None}
     sender_role = db.user.find_one({"_id": mail["sender"]}, {"role": 1})
     if sender_role["role"] == "applicant":

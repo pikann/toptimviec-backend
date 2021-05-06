@@ -20,7 +20,7 @@ def new_candidate_list():
         id_list = create_candidate_list(token.id_user, rq["name"])
     except:
         abort(403)
-    return {"id": str(id_list)}
+    return get_my_candidate_lists()
 
 
 @bp.route('/list-candidate', methods=['GET'])
@@ -78,7 +78,7 @@ def change_name_list_candidate(id):
         update_list_name(ObjectId(id), token.id_user, rq["name"])
     except:
         abort(404)
-    return "ok"
+    return get_my_candidate_lists()
 
 
 @bp.route('/list-candidate/<id>', methods=['DELETE'])
@@ -92,7 +92,7 @@ def delete_list_candidate(id):
         abort(403)
     if rs.deleted_count == 0:
         abort(404)
-    return "ok"
+    return get_my_candidate_lists()
 
 
 @bp.route('/list-candidate/<id>/<id_cv>', methods=['DELETE'])
@@ -106,4 +106,4 @@ def delete_cv_from_list_candidate(id, id_cv):
         abort(403)
     if rs.modified_count == 0:
         abort(404)
-    return "ok"
+    return get_my_candidate_list(id)

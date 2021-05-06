@@ -3,14 +3,32 @@ from routes import bp
 import re
 from bson.objectid import ObjectId
 from services.user import check_email
-from services.employer import create_employer, get_employer_by_id
+from services.employer import create_employer, get_employer_by_id, list_employer
 from services.post import get_post_of_employer
+
+
+@bp.route("/employer", methods=['GET'])
+def get_list_employer():
+    global page, name
+    try:
+        name = str(request.args.get('name', default=""))
+        page = int(request.args.get('page', default=0))
+    except:
+        abort(400)
+
+    try:
+        return {"list_employer": list_employer(name, page)}
+    except:
+        abort(403)
 
 
 @bp.route("/employer", methods=['POST'])
 def post_employer():
     rq = request.json
     if not rq or not 'email' in rq or not 'password' in rq or not "name" in rq:
+        abort(400)
+
+    if rq["email"].__class__ != str or rq["password"].__class__ != str or rq["name"].__class__ != str:
         abort(400)
 
     if not re.match(r"[-a-zA-Z0-9.`?{}]+@\w+\.\w+", rq["email"]):

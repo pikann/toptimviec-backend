@@ -13,6 +13,8 @@ from routes.cv import *
 from routes.list_candidate import *
 from routes.mail import *
 from routes.notification import *
+from routes.cloudinary_signature import *
+from routes.user import *
 
 
 @bp.route('/')

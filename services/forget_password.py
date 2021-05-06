@@ -1,22 +1,31 @@
-from services import db, yag, email_form
+from services import db, smtp, email_form
 import base64
 import os
 import datetime
 from jinja2 import Template
 import hashlib
+from email.mime.text import MIMEText
+from email.header import Header
 
 
 def send_forget_key(id_user, email):
     forget_key = {"id_user": id_user,
                   "key": base64.b64encode(os.urandom(24)).decode('utf-8'),
                   "expiration": datetime.datetime.utcnow() + datetime.timedelta(seconds=3600)}
-    db.forget_key.insert_one(forget_key)
 
     mail_content = "Link thay đổi mật khẩu:<br>" + str(forget_key["id_user"]) + "<br>" + forget_key["key"]
     html_content = Template(email_form).render(
         {"content": mail_content, "href": "#", "button_text": "Đặt lại mật khẩu"})
 
-    yag.send(to=email, subject="Link thay đổi mật khẩu TopTimViec", contents=html_content)
+    msg = MIMEText(html_content, 'html', 'utf-8')
+    msg['Subject'] = Header("Link thay đổi mật khẩu TopTimViec", 'utf-8')
+
+    try:
+        smtp.sendmail('toptimviec@gmail.com', email, msg.as_string())
+    except:
+        smtp.sendmail('toptimviec@gmail.com', email, msg.as_string())
+
+    db.forget_key.insert_one(forget_key)
 
 
 def check_forget_key(id_user, key):

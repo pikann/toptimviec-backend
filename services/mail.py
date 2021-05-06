@@ -1,9 +1,11 @@
 import threading
 from jinja2 import Template
 from routes.socket import socketio
-from services import db, email_form, yag
+from services import db, email_form, smtp
 from models.Mail import Mail
 from services.notification import notify_mail
+from email.mime.text import MIMEText
+from email.header import Header
 
 
 def gmail_has_email(title, content, receiver, attach_post, attach_cv, sender, role_sender):
@@ -43,7 +45,14 @@ def gmail_has_email(title, content, receiver, attach_post, attach_cv, sender, ro
                         </table>\
                         <br>"+content
         html_content = Template(email_form).render({"content": mail_content, "href": "#", "button_text": "Xem chi tiết"})
-        yag.send(to=receiver_emails, subject="[TopTimViec]"+title, contents=html_content)
+
+        msg = MIMEText(html_content, 'html', 'utf-8')
+        msg['Subject'] = Header("[TopTimViec]"+title, 'utf-8')
+
+        try:
+            smtp.sendmail('toptimviec@gmail.com', receiver_emails, msg.as_string())
+        except:
+            smtp.sendmail('toptimviec@gmail.com', receiver_emails, msg.as_string())
     except:
         return
 
@@ -57,11 +66,11 @@ def add_mail(id_user, receiver, title, content, attach_post, attach_cv, role):
 
 
 def get_my_list_mail(id_user, page):
-    return list(db.mail.find({"receiver": id_user}, {"title": 1}).sort([("_id", -1)]).skip(page*10).limit(10))
+    return list(db.mail.find({"receiver": id_user}, {"title": 1, "sent_date": 1}).sort([("_id", -1)]).skip(page*10).limit(10))
 
 
 def get_my_list_mail_send(id_user, page):
-    return list(db.mail.find({"sender": id_user}, {"title": 1}).sort([("_id", -1)]).skip(page*10).limit(10))
+    return list(db.mail.find({"sender": id_user}, {"title": 1, "sent_date": 1}).sort([("_id", -1)]).skip(page*10).limit(10))
 
 
 def find_mail(id_mail):
@@ -69,7 +78,7 @@ def find_mail(id_mail):
 
 
 def get_mail_info(mail):
-    rs = {"_id": str(mail["_id"]), "title": mail["title"], "content": mail["content"], "attact_post": None,
+    rs = {"_id": str(mail["_id"]), "title": mail["title"], "content": mail["content"], "sent_date": mail["sent_date"], "attact_post": None,
           "attach_cv": None}
     sender_role = db.user.find_one({"_id": mail["sender"]}, {"role": 1})
     if sender_role["role"] == "applicant":

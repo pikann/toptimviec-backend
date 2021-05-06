@@ -26,3 +26,19 @@ def get_uset_by_validate_key(id_user, key):
 
 def update_validate(id_user):
     db.user.update_one({"_id": id_user}, {"$set": {"validate": ""}})
+
+
+def reset_password(id_user, old_password, new_password):
+    rs = db.user.update_one(
+        {"_id": id_user, "password": hashlib.md5(old_password.encode('utf-8')).hexdigest()},
+        {"$set": {"password": hashlib.md5(new_password.encode('utf-8')).hexdigest()}}
+    )
+    return rs.matched_count
+
+
+def ban_user(id_user):
+    db.user.update_one({"_id": id_user}, {"$set": {"ban": True}})
+
+
+def unban_user(id_user):
+    db.user.update_one({"_id": id_user}, {"$set": {"ban": False}})

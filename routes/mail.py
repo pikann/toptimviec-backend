@@ -45,7 +45,7 @@ def get_list_mail():
         list_mail=get_my_list_mail(token.id_user, page)
     except:
         abort(403)
-    rs=[{"_id": str(mail["_id"]), "name": mail["title"]} for mail in list_mail]
+    rs=[{"_id": str(mail["_id"]), "name": mail["title"], "sent_date": mail["sent_date"]} for mail in list_mail]
     return {"list_mail": rs}
 
 
@@ -62,7 +62,7 @@ def get_list_mail_send():
         list_mail=get_my_list_mail_send(token.id_user, page)
     except:
         abort(403)
-    rs=[{"_id": str(mail["_id"]), "name": mail["title"]} for mail in list_mail]
+    rs=[{"_id": str(mail["_id"]), "name": mail["title"], "sent_date": mail["sent_date"]} for mail in list_mail]
     return {"list_mail": rs}
 
 

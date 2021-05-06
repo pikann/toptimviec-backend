@@ -3,8 +3,19 @@ from models.Employer import Employer
 import hashlib
 import base64
 import os
-from services import db, email_form, yag
+from services import db, email_form, smtp
 from jinja2 import Template
+from email.mime.text import MIMEText
+from email.header import Header
+
+
+def list_employer(name, page):
+    employers = list(db.employer.find({"name": {'$regex': name}}, {"name": 1, "avatar": 1, "bio": 1}).sort([("_id", 1)]).skip(page * 10).limit(10))
+    for employer in employers:
+        employer["_id"] = str(employer["_id"])
+        if len(employer["bio"]) > 100:
+            employer["bio"] = employer["bio"][:100] + "..."
+    return employers
 
 
 def create_employer(email, password, name):
@@ -18,15 +29,41 @@ def create_employer(email, password, name):
 
     user.validate = base64.b64encode(os.urandom(24)).decode('utf-8')
 
+    mail_content = "Chào " + employer.name + ",<br>Tài khoản của bạn đã được khởi tạo thành công.<br>Xin vui lòng nhấn vào link bên dưới để hoàn tất việc đăng ký."
+    html_content = Template(email_form).render(
+        {"content": mail_content, "href": "http://toptimviec.herokuapp.com/dang-ky/xac-nhan-email?id=" + str(
+            user.id()) + "&key=" + user.validate, "button_text": "Xác nhận tài khoản"})
+
+    msg = MIMEText(html_content, 'html', 'utf-8')
+    msg['Subject'] = Header("Xác nhận tài khoản TopTimViec", 'utf-8')
+
+    try:
+        smtp.sendmail('toptimviec@gmail.com', user.email, msg.as_string())
+    except:
+        smtp.sendmail('toptimviec@gmail.com', user.email, msg.as_string())
+
     db.user.insert_one(user.__dict__)
     db.employer.insert(employer.__dict__, check_keys=False)
-
-    mail_content = "Chào " + employer.name + ",<br>Tài khoản của bạn đã được khởi tạo thành công.<br>Xin vui lòng nhấn vào link bên dưới để hoàn tất việc đăng ký.<br>" + str(
-        user.id()) + "<br>" + user.validate
-    html_content = Template(email_form).render(
-        {"content": mail_content, "href": "#", "button_text": "Xác nhận tài khoản"})
-    yag.send(to=user.email, subject="Xác nhận tài khoản TopTimViec", contents=html_content)
 
 
 def get_employer_by_id(id_user, attribute):
     return db.employer.find_one({"_id": id_user}, attribute)
+
+
+def update_employer_profile(id_user, name, bio):
+    db.employer.update_one(
+        {"_id": id_user},
+        {"$set": {
+            "name": name,
+            "bio": bio
+        }}
+    )
+
+
+def update_employer_avatar(id_user, avatar):
+    db.employer.update_one(
+        {"_id": id_user},
+        {"$set": {
+            "avatar": avatar
+        }}
+    )

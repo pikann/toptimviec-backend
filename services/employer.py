@@ -1,10 +1,12 @@
-from models.User import User
-from models.Employer import Employer
+import math
 import hashlib
 import base64
 import os
-from services import db, email_form, smtp
 from jinja2 import Template
+
+from models.User import User
+from models.Employer import Employer
+from services import db, email_form, smtp
 from email.mime.text import MIMEText
 from email.header import Header
 
@@ -16,6 +18,10 @@ def list_employer(name, page):
         if len(employer["bio"]) > 100:
             employer["bio"] = employer["bio"][:100] + "..."
     return employers
+
+
+def count_page_list_employer(name):
+    return math.ceil(db.employer.find({"name": {'$regex': name}}).count()/8)
 
 
 def create_employer(email, password, name):

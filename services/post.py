@@ -1,3 +1,4 @@
+import math
 from services import db
 import datetime
 from models.Post import Post
@@ -31,6 +32,10 @@ def get_post_of_employer(id, page):
                                             "employer._id": {"$toString": "$employer._id"}
                                         }}]))
     return list_post
+
+
+def count_page_my_list_post(id):
+    return math.ceil(db.post.find({"employer": id}).count()/20)
 
 
 def recommend_post(id_user, list_showed, place):

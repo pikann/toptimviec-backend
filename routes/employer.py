@@ -3,7 +3,7 @@ from routes import bp
 import re
 from bson.objectid import ObjectId
 from services.user import check_email
-from services.employer import create_employer, get_employer_by_id, list_employer
+from services.employer import create_employer, get_employer_by_id, list_employer, count_page_list_employer
 from services.post import get_post_of_employer
 
 
@@ -17,7 +17,7 @@ def get_list_employer():
         abort(400)
 
     try:
-        return {"list_employer": list_employer(name, page)}
+        return {"list_employer": list_employer(name, page), "count_page": count_page_list_employer(name)}
     except:
         abort(403)
 

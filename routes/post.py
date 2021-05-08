@@ -6,7 +6,7 @@ import datetime
 import threading
 from services.learn import learn_employer_hashtag, learn_applicant_hashtag
 from services.global_data import check_place, check_list_hashtag, check_list_place
-from services.post import recommend_post, search_post, get_all_post, get_post_info, new_post, find_post, update_post, delete_post_by_id, get_post_of_employer
+from services.post import recommend_post, search_post, get_all_post, get_post_info, new_post, find_post, update_post, delete_post_by_id, get_post_of_employer, count_page_my_list_post
 from services.list_candidate import create_candidate_list_for_post
 
 
@@ -182,6 +182,6 @@ def get_my_post():
     token = g.current_token
     try:
         list_post = get_post_of_employer(token.id_user, page)
-        return {"list_post": list_post}
+        return {"list_post": list_post, "count_page": count_page_my_list_post(token.id_user)}
     except:
         abort(403)

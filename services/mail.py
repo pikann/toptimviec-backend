@@ -1,3 +1,4 @@
+import math
 import threading
 from jinja2 import Template
 from routes.socket import socketio
@@ -69,8 +70,16 @@ def get_my_list_mail(id_user, page):
     return list(db.mail.find({"receiver": id_user}, {"title": 1, "sent_date": 1}).sort([("_id", -1)]).skip(page*10).limit(10))
 
 
+def count_page_my_list_mail(id_user):
+    return math.ceil(db.mail.find({"receiver": id_user}).count()/10)
+
+
 def get_my_list_mail_send(id_user, page):
     return list(db.mail.find({"sender": id_user}, {"title": 1, "sent_date": 1}).sort([("_id", -1)]).skip(page*10).limit(10))
+
+
+def count_page_my_list_mail_send(id_user):
+    return math.ceil(db.mail.find({"sender": id_user}).count()/10)
 
 
 def find_mail(id_mail):

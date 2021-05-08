@@ -17,7 +17,21 @@ def get_list_employer():
         abort(400)
 
     try:
-        return {"list_employer": list_employer(name, page), "count_page": count_page_list_employer(name)}
+        return {"list_employer": list_employer(name, page)}
+    except:
+        abort(403)
+
+
+@bp.route("/employer/page", methods=['GET'])
+def get_count_page_list_employer():
+    global name
+    try:
+        name = str(request.args.get('name', default=""))
+    except:
+        abort(400)
+
+    try:
+        return {"count_page": count_page_list_employer(name)}
     except:
         abort(403)
 

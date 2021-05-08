@@ -45,12 +45,21 @@ def get_list_mail():
         abort(400)
     try:
         list_mail = get_my_list_mail(token.id_user, page)
-        count_page = count_page_my_list_mail(token.id_user)
     except:
         abort(403)
     rs = [{"_id": str(mail["_id"]), "name": mail["title"], "sent_date": mail["sent_date"]} for
           mail in list_mail]
-    return {"list_mail": rs, "count_page": count_page}
+    return {"list_mail": rs}
+
+
+@bp.route('/mail/page', methods=['GET'])
+@token_auth.login_required()
+def get_number_of_list_mail():
+    token = g.current_token
+    try:
+        return {"count_page": count_page_my_list_mail(token.id_user)}
+    except:
+        abort(403)
 
 
 @bp.route('/mail/send', methods=['GET'])
@@ -64,12 +73,21 @@ def get_list_mail_send():
         abort(400)
     try:
         list_mail = get_my_list_mail_send(token.id_user, page)
-        count_page = count_page_my_list_mail_send(token.id_user)
     except:
         abort(403)
     rs = [{"_id": str(mail["_id"]), "name": mail["title"], "sent_date": mail["sent_date"]} for
           mail in list_mail]
-    return {"list_mail": rs, "count_page": count_page}
+    return {"list_mail": rs}
+
+
+@bp.route('/mail/send/page', methods=['GET'])
+@token_auth.login_required()
+def get_number_of_list_mail_send():
+    token = g.current_token
+    try:
+        return {"count_page": count_page_my_list_mail_send(token.id_user)}
+    except:
+        abort(403)
 
 
 @bp.route('/mail/<id>', methods=['GET'])

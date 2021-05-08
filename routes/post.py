@@ -182,6 +182,16 @@ def get_my_post():
     token = g.current_token
     try:
         list_post = get_post_of_employer(token.id_user, page)
-        return {"list_post": list_post, "count_page": count_page_my_list_post(token.id_user)}
+        return {"list_post": list_post}
+    except:
+        abort(403)
+
+
+@bp.route("/post/my/page", methods=['GET'])
+@token_auth.login_required(role="employer")
+def get_number_my_post_page():
+    token = g.current_token
+    try:
+        return {"count_page": count_page_my_list_post(token.id_user)}
     except:
         abort(403)

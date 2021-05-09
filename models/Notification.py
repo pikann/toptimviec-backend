@@ -9,5 +9,6 @@ class Notification:
         self.id_attach = id_attach
         self.content = content
         self.img = img
+        self.read = False
     def id(self):
         return self._id

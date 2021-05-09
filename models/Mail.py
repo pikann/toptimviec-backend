@@ -13,6 +13,7 @@ class Mail:
         self.receiver = receiver
         self.attach_post = attach_post
         self.attach_cv = attach_cv
+        self.read = []
 
     def id(self):
         return self._id

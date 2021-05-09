@@ -2,7 +2,7 @@ from flask import g, abort, request
 from routes import bp
 from services.auth import token_auth
 from services.mail import add_mail, get_my_list_mail, get_my_list_mail_send, find_mail, get_mail_info, \
-    count_page_my_list_mail_send, count_page_my_list_mail
+    count_page_my_list_mail_send, count_page_my_list_mail, set_read_mail
 from bson.objectid import ObjectId
 
 
@@ -47,8 +47,8 @@ def get_list_mail():
         list_mail = get_my_list_mail(token.id_user, page)
     except:
         abort(403)
-    rs = [{"_id": str(mail["_id"]), "name": mail["title"], "sent_date": mail["sent_date"]} for
-          mail in list_mail]
+    rs = [{"_id": str(mail["_id"]), "name": mail["title"], "sent_date": mail["sent_date"],
+           "read": token.id_user in mail["read"]} for mail in list_mail]
     return {"list_mail": rs}
 
 
@@ -105,6 +105,7 @@ def get_mail(id):
         abort(405)
     try:
         rs = get_mail_info(mail)
+        set_read_mail(token.id_user, ObjectId(id))
     except:
         abort(403)
     return rs

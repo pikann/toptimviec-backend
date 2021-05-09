@@ -67,7 +67,7 @@ def add_mail(id_user, receiver, title, content, attach_post, attach_cv, role):
 
 
 def get_my_list_mail(id_user, page):
-    return list(db.mail.find({"receiver": id_user}, {"title": 1, "sent_date": 1}).sort([("_id", -1)]).skip(page*10).limit(10))
+    return list(db.mail.find({"receiver": id_user}, {"title": 1, "sent_date": 1, "read": 1}).sort([("_id", -1)]).skip(page*10).limit(10))
 
 
 def count_page_my_list_mail(id_user):
@@ -109,3 +109,7 @@ def get_mail_info(mail):
     sender["_id"] = str(sender["_id"])
     rs["sender"] = sender
     return rs
+
+
+def set_read_mail(id_user, id_mail):
+    db.mail.update_one({"_id": id_mail}, {"$push": {"read": id_user}})

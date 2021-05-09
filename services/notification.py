@@ -29,6 +29,7 @@ def notify_mail(id_user, role, receivers, title, id_mail):
 
 def get_list_notification(id_user, list_showed):
     list_notify = list(db.notification.find({"user": id_user, "_id": {"$not": {"$in": list_showed}}}, {"user": 0}).sort([("_id", -1)]).limit(10))
+    db.notification.update_many({"_id": {"$in": [notify["_id"] for notify in list_notify]}}, {"$set": {"read": True}})
     for notify in list_notify:
         notify["id_attach"] = str(notify["id_attach"])
         notify["_id"] = str(notify["_id"])

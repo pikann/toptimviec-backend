@@ -3,7 +3,7 @@ from flask import abort, g, request
 from models.Token import Token
 from services.user import check_password
 from services.refresh_token import create_refresh_token
-from services.token import check_token
+from util.token import check_token
 
 basic_auth = HTTPBasicAuth()
 token_auth = HTTPTokenAuth()

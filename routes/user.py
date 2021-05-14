@@ -6,7 +6,7 @@ from services.applicant import get_applicant_by_id, update_applicant_profile, up
 from services.employer import get_employer_by_id, update_employer_profile, update_employer_avatar
 from services.global_data import check_place
 from services.user import reset_password, ban_user, unban_user
-from services.token import revoke_token_user
+from util.token import revoke_token_user
 
 
 @bp.route('/info', methods=['GET'])

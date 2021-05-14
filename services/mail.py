@@ -87,7 +87,7 @@ def find_mail(id_mail):
 
 
 def get_mail_info(mail):
-    rs = {"_id": str(mail["_id"]), "title": mail["title"], "content": mail["content"], "sent_date": mail["sent_date"], "attact_post": None,
+    rs = {"_id": str(mail["_id"]), "title": mail["title"], "content": mail["content"], "sent_date": mail["sent_date"].strftime("%d-%M-%Y %H:%M"), "attact_post": None,
           "attach_cv": None}
     sender_role = db.user.find_one({"_id": mail["sender"]}, {"role": 1})
     if sender_role["role"] == "applicant":

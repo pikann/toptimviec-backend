@@ -4,7 +4,7 @@ from services.auth import basic_auth, token_auth
 from services.user import get_user_by_id
 from services.applicant import get_applicant_by_id
 from services.employer import get_employer_by_id
-from services.token import encode, revoke_token
+from util.token import encode, revoke_token
 from services.refresh_token import get_refresh_token
 from models.Token import Token
 from bson.objectid import ObjectId

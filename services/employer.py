@@ -12,7 +12,7 @@ from email.header import Header
 
 
 def list_employer(name, page):
-    employers = list(db.employer.find({"name": {'$regex': name}}, {"name": 1, "avatar": 1, "bio": 1}).sort([("_id", 1)]).skip(page * 8).limit(8))
+    employers = list(db.employer.find({"name": {'$regex': name, '$options': 'i'}}, {"name": 1, "avatar": 1, "bio": 1}).sort([("_id", 1)]).skip(page * 8).limit(8))
     for employer in employers:
         employer["_id"] = str(employer["_id"])
         if len(employer["bio"]) > 100:

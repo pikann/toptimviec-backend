@@ -4,6 +4,7 @@ from services.auth import token_auth
 from services.mail import add_mail, get_my_list_mail, get_my_list_mail_send, find_mail, get_mail_info, \
     count_page_my_list_mail_send, count_page_my_list_mail, set_read_mail
 from bson.objectid import ObjectId
+from util.time_format import time_vietnam_format
 
 
 @bp.route('/mail', methods=['POST'])
@@ -47,7 +48,7 @@ def get_list_mail():
         list_mail = get_my_list_mail(token.id_user, page)
     except:
         abort(403)
-    rs = [{"_id": str(mail["_id"]), "name": mail["title"], "sent_date": mail["sent_date"].strftime("%d-%M-%Y %H:%M"),
+    rs = [{"_id": str(mail["_id"]), "name": mail["title"], "sent_date": time_vietnam_format(mail["sent_date"]),
            "read": token.id_user in mail["read"]} for mail in list_mail]
     return {"list_mail": rs}
 
@@ -75,7 +76,7 @@ def get_list_mail_send():
         list_mail = get_my_list_mail_send(token.id_user, page)
     except:
         abort(403)
-    rs = [{"_id": str(mail["_id"]), "name": mail["title"], "sent_date": mail["sent_date"].strftime("%d-%M-%Y %H:%M")} for
+    rs = [{"_id": str(mail["_id"]), "name": mail["title"], "sent_date": time_vietnam_format(mail["sent_date"])} for
           mail in list_mail]
     return {"list_mail": rs}
 

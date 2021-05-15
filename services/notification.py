@@ -1,6 +1,7 @@
 from services import db
 from models.Notification import Notification
 from routes.socket import socketio
+from util.time_format import time_sub_format
 
 
 def notify_mail(id_user, role, receivers, title, id_mail):
@@ -33,4 +34,5 @@ def get_list_notification(id_user, list_showed):
     for notify in list_notify:
         notify["id_attach"] = str(notify["id_attach"])
         notify["_id"] = str(notify["_id"])
+        notify["time"] = time_sub_format(notify["time"])
     return list_notify

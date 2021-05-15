@@ -1,3 +1,4 @@
+import datetime
 from bson.objectid import ObjectId
 
 
@@ -10,5 +11,6 @@ class Notification:
         self.content = content
         self.img = img
         self.read = False
+        self.time = datetime.datetime.utcnow()
     def id(self):
         return self._id

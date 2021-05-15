@@ -36,3 +36,7 @@ def get_list_notification(id_user, list_showed):
         notify["_id"] = str(notify["_id"])
         notify["time"] = time_sub_format(notify["time"])
     return list_notify
+
+
+def get_not_read_notification_number(id_user):
+    return db.notification.find({"user": id_user, "read": False}).count()

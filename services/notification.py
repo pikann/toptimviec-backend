@@ -29,7 +29,7 @@ def notify_mail(id_user, role, receivers, title, id_mail):
                 "img": user["avatar"],
                 "id_attach": str(id_mail),
                 "time": time_sub_format(notification.time),
-                "num_notify": get_not_read_notification_number(id_user)}, room=str(receiver))
+                "num_notify": get_not_read_notification_number(receiver)}, room=str(receiver))
         except:
             pass
 

@@ -5,7 +5,7 @@ from util.time_format import time_sub_format
 
 
 def notify_mail(id_user, role, receivers, title, id_mail):
-    global user
+    global user, notification
     try:
         notify_content = "Bạn có một thư mới từ "
         if role == "employer":
@@ -23,7 +23,13 @@ def notify_mail(id_user, role, receivers, title, id_mail):
         except:
             pass
         try:
-            socketio.emit("new", {"type": "mail", "content": notify_content, "img": user["avatar"], "id_attach": str(id_mail)}, room=str(receiver))
+            socketio.emit("new", {
+                "type": "mail",
+                "content": notify_content,
+                "img": user["avatar"],
+                "id_attach": str(id_mail),
+                "time": time_sub_format(notification.time),
+                "num_notify": get_not_read_notification_number(id_user)}, room=str(receiver))
         except:
             pass
 

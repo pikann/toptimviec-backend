@@ -7,6 +7,7 @@ from models.Mail import Mail
 from services.notification import notify_mail
 from email.mime.text import MIMEText
 from email.header import Header
+from util.time_format import time_vietnam_format
 
 
 def gmail_has_email(title, content, receiver, attach_post, attach_cv, sender, role_sender):
@@ -87,7 +88,7 @@ def find_mail(id_mail):
 
 
 def get_mail_info(mail):
-    rs = {"_id": str(mail["_id"]), "title": mail["title"], "content": mail["content"], "sent_date": mail["sent_date"].strftime("%d-%M-%Y %H:%M"), "attact_post": None,
+    rs = {"_id": str(mail["_id"]), "title": mail["title"], "content": mail["content"], "sent_date": time_vietnam_format(mail["sent_date"]), "attact_post": None,
           "attach_cv": None}
     sender_role = db.user.find_one({"_id": mail["sender"]}, {"role": 1})
     if sender_role["role"] == "applicant":

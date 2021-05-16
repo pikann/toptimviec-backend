@@ -21,7 +21,7 @@ def list_employer(name, page):
 
 
 def count_page_list_employer(name):
-    return math.ceil(db.employer.find({"name": {'$regex': name}}).count()/8)
+    return math.ceil(db.employer.find({"name": {'$regex': name, '$options': 'i'}}).count()/8)
 
 
 def create_employer(email, password, name):

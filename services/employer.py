@@ -1,7 +1,8 @@
 import math
 import hashlib
-import base64
-import os
+import random
+import string
+
 from jinja2 import Template
 
 from models.User import User
@@ -33,7 +34,7 @@ def create_employer(email, password, name):
     user.role = "employer"
     employer.name = name
 
-    user.validate = base64.b64encode(os.urandom(24)).decode('utf-8')
+    user.validate = ''.join(random.choice(string.ascii_uppercase + string.digits) for i in range(30))
 
     mail_content = "Chào " + employer.name + ",<br>Tài khoản của bạn đã được khởi tạo thành công.<br>Xin vui lòng nhấn vào link bên dưới để hoàn tất việc đăng ký."
     html_content = Template(email_form).render(

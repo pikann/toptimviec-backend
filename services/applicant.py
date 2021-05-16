@@ -1,9 +1,9 @@
+import random
+import string
 from models.User import User
 from models.Applicant import Applicant
 import hashlib
 import datetime
-import base64
-import os
 from services import db, email_form, smtp
 from jinja2 import Template
 from email.mime.text import MIMEText
@@ -21,7 +21,7 @@ def create_applicant(email, password, name, gender, dob):
     applicant.gender = gender
     applicant.dob = datetime.datetime.strptime(dob, "%Y-%m-%dT%H:%M:%S.%fZ")
 
-    user.validate = base64.b64encode(os.urandom(24)).decode('utf-8')
+    user.validate = ''.join(random.choice(string.ascii_uppercase + string.digits) for i in range(30))
 
     mail_content = "Chào " + name + ",<br>Tài khoản của bạn đã được khởi tạo thành công.<br>Xin vui lòng nhấn vào link bên dưới để hoàn tất việc đăng ký."
     html_content = Template(email_form).render(

@@ -49,7 +49,7 @@ def get_cv(id):
     elif token.role == "applicant":
         if cv["applicant"] != token.id_user:
             abort(405)
-    cv.pop("applicant", None)
+    cv["applicant"] = str(cv["applicant"])
     return cv
 
 

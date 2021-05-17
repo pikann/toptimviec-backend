@@ -84,32 +84,114 @@ def count_page_my_list_mail_send(id_user):
 
 
 def find_mail(id_mail):
-    return db.mail.find_one({"_id": id_mail})
+    request = [
+                    {"$match": {"_id": id_mail}},
+                    {"$lookup": {
+                        "from": "user",
+                        "localField": "sender",
+                        "foreignField": "_id",
+                        "as": "sender"
+                    }},
+                    {"$unwind": "$sender"},
+                    {"$lookup": {
+                        "from": "applicant",
+                        "localField": "sender._id",
+                        "foreignField": "_id",
+                        "as": "sender.applicant"
+                    }},
+                    {"$lookup": {
+                        "from": "employer",
+                        "localField": "sender._id",
+                        "foreignField": "_id",
+                        "as": "sender.employer"
+                    }},
+                    {"$unwind": {
+                        "path": "$sender.applicant",
+                        "preserveNullAndEmptyArrays": True
+                    }},
+                    {"$unwind": {
+                        "path": "$sender.employer",
+                        "preserveNullAndEmptyArrays": True
+                    }},
+                    {"$lookup": {
+                        "from": "cv",
+                        "localField": "attach_cv",
+                        "foreignField": "_id",
+                        "as": "attach_cv"
+                    }},
+                    {"$lookup": {
+                        "from": "post",
+                        "localField": "attach_post",
+                        "foreignField": "_id",
+                        "as": "attach_post"
+                    }},
+                    {"$unwind": {
+                        "path": "$attach_cv",
+                        "preserveNullAndEmptyArrays": True
+                    }},
+                    {"$unwind": {
+                        "path": "$attach_post",
+                        "preserveNullAndEmptyArrays": True
+                    }},
+                    {"$lookup": {
+                        "from": "employer",
+                        "localField": "attach_post.employer",
+                        "foreignField": "_id",
+                        "as": "attach_post.employer"
+                    }},
+                    {"$unwind": {
+                        "path": "$attach_post.employer",
+                        "preserveNullAndEmptyArrays": True
+                    }},
+                    {"$project": {
+                        "attach_cv._id": {"$toString": "$attach_cv._id"},
+                        "attach_cv.name": 1,
+                        "attach_cv.avatar": 1,
+                        "attach_cv.position": 1,
+                        "attach_cv.hashtag": 1,
+                        "attach_cv.place": 1,
+                        "attach_post._id": {"$toString": "$attach_post._id"},
+                        "attach_post.title": 1,
+                        "attach_post.place": 1,
+                        "attach_post.hashtag": 1,
+                        "attach_post.salary": 1,
+                        "attach_post.employer._id": {"$toString": "$attach_post.employer._id"},
+                        "attach_post.employer.name": 1,
+                        "attach_post.employer.avatar": 1,
+                        "_id": {"$toString": "$_id"},
+                        "title": 1,
+                        "content": 1,
+                        "sent_date": 1,
+                        "receiver": 1,
+                        "sender.applicant._id": 1,
+                        "sender.applicant.name": 1,
+                        "sender.applicant.avatar": 1,
+                        "sender.employer._id": 1,
+                        "sender.employer.name": 1,
+                        "sender.employer.avatar": 1,
+                    }}
+                ]
+    return list(db.mail.aggregate(request))
 
 
 def get_mail_info(mail):
-    rs = {"_id": str(mail["_id"]), "title": mail["title"], "content": mail["content"], "sent_date": time_vietnam_format(mail["sent_date"]), "attact_post": None,
-          "attach_cv": None}
-    sender_role = db.user.find_one({"_id": mail["sender"]}, {"role": 1})
-    if sender_role["role"] == "applicant":
-        sender = db.applicant.find_one({"_id": mail["sender"]}, {"_id": 1, "avatar": 1, "name": 1})
-    elif sender_role["role"] == "employer":
-        sender = db.employer.find_one({"_id": mail["sender"]}, {"_id": 1, "avatar": 1, "name": 1})
-    post = None
-    if mail["attach_post"] is not None:
-        post = db.post.find_one({"_id": mail["attact_post"]},
-                                {"_id": 1, "title": 1, "place": 1, "salary": 1, "hashtag": 1})
-        post["_id"] = str(post["_id"])
-        rs["attach_post"] = post
-    cv = None
-    if mail["attach_cv"] is not None:
-        cv = db.cv.find_one({"_id": mail["attach_cv"]},
-                            {"_id": 1, "name": 1, "avatar": 1, "position": 1, "hashtag": 1, "place": 1})
-        cv["_id"] = str(cv["_id"])
-        rs["attach_cv"] = cv
-    sender["_id"] = str(sender["_id"])
-    rs["sender"] = sender
-    return rs
+    mail["sent_date"] = time_vietnam_format(mail["sent_date"])
+
+    if "applicant" in mail["sender"]:
+        mail["sender"] = mail["sender"]["applicant"]
+        mail["sender"]["role"] = "applicant"
+    elif "employer" in mail["sender"]:
+        mail["sender"] = mail["sender"]["employer"]
+        mail["sender"]["role"] = "employer"
+    else:
+        return None
+
+    if mail["attach_post"]["_id"] is None:
+        mail["attach_post"] = None
+    if mail["attach_cv"]["_id"] is None:
+        mail["attach_cv"] = None
+
+    return mail
 
 
 def set_read_mail(id_user, id_mail):

@@ -96,17 +96,27 @@ def get_number_of_list_mail_send():
 def get_mail(id):
     global mail, sender, rs
     token = g.current_token
+
     try:
         mail = find_mail(ObjectId(id))
     except:
         abort(403)
-    if mail is None:
+
+    if len(mail) == 0:
         abort(404)
-    if token.id_user != mail["sender"] and token.id_user not in mail["receiver"]:
+
+    try:
+        mail = get_mail_info(mail[0])
+    except:
+        abort(403)
+
+    if token.id_user != mail["sender"]["_id"] and token.id_user not in mail["receiver"]:
         abort(405)
     try:
-        rs = get_mail_info(mail)
+        mail["sender"]["_id"] = str(mail["sender"]["_id"])
+        mail["receiver"] = [str(receiver) for receiver in mail["receiver"]]
+
         set_read_mail(token.id_user, ObjectId(id))
     except:
         abort(403)
-    return rs
+    return mail

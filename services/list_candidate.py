@@ -64,11 +64,15 @@ def get_candidate_list(id_list, id_user):
                                                            "list.avatar": 1,
                                                            "list.position": 1,
                                                            "list.hashtag": 1,
-                                                           "list.place": 1
+                                                           "list.place": 1,
+                                                           "list.applicant": 1
                                                        }},
                                                        {"$set": {
                                                            "_id": {"$toString": "$_id"}
                                                        }}]))[0]
+    for cv in candidate_list["list"]:
+        cv["applicant"] = str(cv["applicant"])
+
     return candidate_list
 
 

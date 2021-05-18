@@ -6,7 +6,7 @@ import datetime
 import threading
 from services.learn import learn_applicant_hashtag, learn_employer_hashtag
 from services.global_data import check_list_hashtag, check_place
-from services.cv import recommend_cv, find_list_cv, find_cv, check_skill, check_content, create_cv, update_cv, delete_cv, get_list_cv_by_id_applicant
+from services.cv import recommend_cv, find_list_cv, find_cv, check_skill, check_content, create_cv, update_cv, delete_cv, get_list_cv_by_id_applicant, get_number_cv_by_id_applicant
 
 
 @bp.route('/cv-list', methods=['POST'])
@@ -184,5 +184,14 @@ def get_my_list_cv():
     try:
         list_cv = get_list_cv_by_id_applicant(token.id_user, page)
         return {"list_cv": list_cv}
+    except:
+        abort(403)
+
+@bp.route("/cv/my/page", methods=['GET'])
+@token_auth.login_required(role="applicant")
+def get_my_list_cv_number():
+    token = g.current_token
+    try:
+        return {"count_page": get_number_cv_by_id_applicant(token.id_user)}
     except:
         abort(403)

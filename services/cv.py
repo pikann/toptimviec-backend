@@ -1,3 +1,5 @@
+import math
+
 from services import db
 from models.CV import CV
 
@@ -171,3 +173,6 @@ def get_list_cv_by_id_applicant(id_applicant, page):
     for cv in list_cv:
         cv["_id"]=str(cv["_id"])
     return list_cv
+
+def get_number_cv_by_id_applicant(id_applicant):
+    return math.ceil(db.cv.find({"applicant": id_applicant}).count() / 10)

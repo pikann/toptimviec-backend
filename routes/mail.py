@@ -94,7 +94,7 @@ def get_number_of_list_mail_send():
 @bp.route('/mail/<id>', methods=['GET'])
 @token_auth.login_required()
 def get_mail(id):
-    global mail, sender, rs
+    global mail, sender, rs, able
     token = g.current_token
 
     try:
@@ -110,8 +110,17 @@ def get_mail(id):
     except:
         abort(403)
 
-    if not check_mail_readable(token.id_user, mail):
+    if mail is None:
+        abort(404)
+
+    try:
+        able = check_mail_readable(token.id_user, mail)
+    except:
         abort(405)
+
+    if not able:
+        abort(405)
+
     try:
         set_read_mail(token.id_user, ObjectId(id))
     except:

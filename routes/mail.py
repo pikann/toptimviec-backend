@@ -2,7 +2,7 @@ from flask import g, abort, request
 from routes import bp
 from services.auth import token_auth
 from services.mail import add_mail, get_my_list_mail, get_my_list_mail_send, find_mail, get_mail_info, \
-    count_page_my_list_mail_send, count_page_my_list_mail, set_read_mail
+    count_page_my_list_mail_send, count_page_my_list_mail, set_read_mail, check_mail_readable
 from bson.objectid import ObjectId
 from util.time_format import time_vietnam_format
 
@@ -110,12 +110,9 @@ def get_mail(id):
     except:
         abort(403)
 
-    if token.id_user != mail["sender"]["_id"] and token.id_user not in mail["receiver"]:
+    if not check_mail_readable(token.id_user, mail):
         abort(405)
     try:
-        mail["sender"]["_id"] = str(mail["sender"]["_id"])
-        mail["receiver"] = [str(receiver) for receiver in mail["receiver"]]
-
         set_read_mail(token.id_user, ObjectId(id))
     except:
         abort(403)

@@ -151,7 +151,7 @@ def put_cv(id):
 
 @bp.route('/cv/<id>', methods=['DELETE'])
 @token_auth.login_required()
-def delete_cv(id):
+def cv_delete(id):
     global db_cv
     token = g.current_token
     try:

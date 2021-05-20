@@ -46,8 +46,12 @@ def logout():
 
 @bp.route('/token', methods=['GET'])
 def get_token():
-    refresh_token = request.headers.get('Authorization').split(' ')[1]
-    if not refresh_token:
+    global refresh_token
+    try:
+        refresh_token = request.headers.get('Authorization').split(' ')[1]
+        if not refresh_token:
+            abort(401)
+    except:
         abort(401)
     try:
         key=refresh_token.split('.')

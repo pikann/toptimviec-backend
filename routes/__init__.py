@@ -15,6 +15,7 @@ from routes.mail import *
 from routes.notification import *
 from routes.cloudinary_signature import *
 from routes.user import *
+from routes.admin import *
 
 
 @bp.route('/')

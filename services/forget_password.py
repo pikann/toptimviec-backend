@@ -1,4 +1,4 @@
-from services import db, smtp, email_form
+from services import db, email_form
 import base64
 import os
 import datetime
@@ -6,6 +6,7 @@ from jinja2 import Template
 import hashlib
 from email.mime.text import MIMEText
 from email.header import Header
+from util.email import send_email
 
 
 def send_forget_key(id_user, email):
@@ -21,9 +22,9 @@ def send_forget_key(id_user, email):
     msg['Subject'] = Header("Link thay đổi mật khẩu TopTimViec", 'utf-8')
 
     try:
-        smtp.sendmail('toptimviec@gmail.com', email, msg.as_string())
+        send_email(email, msg)
     except:
-        smtp.sendmail('toptimviec@gmail.com', email, msg.as_string())
+        send_email(email, msg)
 
     db.forget_key.insert_one(forget_key)
 

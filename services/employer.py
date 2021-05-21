@@ -7,9 +7,10 @@ from jinja2 import Template
 
 from models.User import User
 from models.Employer import Employer
-from services import db, email_form, smtp
+from services import db, email_form
 from email.mime.text import MIMEText
 from email.header import Header
+from util.email import send_email
 
 
 def list_employer(name, page):
@@ -45,9 +46,9 @@ def create_employer(email, password, name):
     msg['Subject'] = Header("Xác nhận tài khoản TopTimViec", 'utf-8')
 
     try:
-        smtp.sendmail('toptimviec@gmail.com', user.email, msg.as_string())
+        send_email(user.email, msg)
     except:
-        smtp.sendmail('toptimviec@gmail.com', user.email, msg.as_string())
+        send_email(user.email, msg)
 
     db.user.insert_one(user.__dict__)
     db.employer.insert(employer.__dict__, check_keys=False)

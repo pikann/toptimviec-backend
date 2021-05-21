@@ -4,10 +4,11 @@ from models.User import User
 from models.Applicant import Applicant
 import hashlib
 import datetime
-from services import db, email_form, smtp
+from services import db, email_form
 from jinja2 import Template
 from email.mime.text import MIMEText
 from email.header import Header
+from util.email import send_email
 
 
 def create_applicant(email, password, name, gender, dob):
@@ -32,9 +33,9 @@ def create_applicant(email, password, name, gender, dob):
     msg['Subject'] = Header("Xác nhận tài khoản TopTimViec", 'utf-8')
 
     try:
-        smtp.sendmail('toptimviec@gmail.com', user.email, msg.as_string())
+        send_email(user.email, msg)
     except:
-        smtp.sendmail('toptimviec@gmail.com', user.email, msg.as_string())
+        send_email(user.email, msg)
 
     db.user.insert_one(user.__dict__)
     db.applicant.insert(applicant.__dict__, check_keys=False)

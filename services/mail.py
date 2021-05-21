@@ -2,12 +2,13 @@ import math
 import threading
 from jinja2 import Template
 from routes.socket import socketio
-from services import db, email_form, smtp
+from services import db, email_form
 from models.Mail import Mail
 from services.notification import notify_mail
 from email.mime.text import MIMEText
 from email.header import Header
 from util.time_format import time_vietnam_format
+from util.email import send_email
 
 
 def gmail_has_email(title, content, receiver, attach_post, attach_cv, sender, role_sender):
@@ -55,9 +56,9 @@ def gmail_has_email(title, content, receiver, attach_post, attach_cv, sender, ro
         msg['Subject'] = Header("[TopTimViec]" + title, 'utf-8')
 
         try:
-            smtp.sendmail('toptimviec@gmail.com', receiver_emails, msg.as_string())
+            send_email(receiver_emails, msg)
         except:
-            smtp.sendmail('toptimviec@gmail.com', receiver_emails, msg.as_string())
+            send_email(receiver_emails, msg)
     except:
         return
 

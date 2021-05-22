@@ -1,6 +1,6 @@
+import random
+import string
 from services import db, email_form
-import base64
-import os
 import datetime
 from jinja2 import Template
 import hashlib
@@ -11,12 +11,14 @@ from util.email import send_email
 
 def send_forget_key(id_user, email):
     forget_key = {"id_user": id_user,
-                  "key": base64.b64encode(os.urandom(24)).decode('utf-8'),
+                  "key": ''.join(random.choice(string.ascii_uppercase + string.digits) for i in range(30)),
                   "expiration": datetime.datetime.utcnow() + datetime.timedelta(seconds=3600)}
 
-    mail_content = "Link thay đổi mật khẩu:<br>" + str(forget_key["id_user"]) + "<br>" + forget_key["key"]
-    html_content = Template(email_form).render(
-        {"content": mail_content, "href": "#", "button_text": "Đặt lại mật khẩu"})
+    mail_content = "Chào bạn!<br>Đây là link thay đổi mật khẩu:<br>"
+    html_content = Template(email_form).render({"content": mail_content,
+                                                "href": "http://toptimviec.herokuapp.com/quen-mat-khau/tao-mat-khau-moi?id_user=" + str(
+                                                    forget_key["id_user"]) + "&key=" + forget_key["key"],
+                                                "button_text": "Đặt lại mật khẩu"})
 
     msg = MIMEText(html_content, 'html', 'utf-8')
     msg['Subject'] = Header("Link thay đổi mật khẩu TopTimViec", 'utf-8')
@@ -30,7 +32,8 @@ def send_forget_key(id_user, email):
 
 
 def check_forget_key(id_user, key):
-    return db.forget_key.find_one({"id_user": id_user, "key": key, "expiration": {"$gte": datetime.datetime.utcnow()}}) is not None
+    return db.forget_key.find_one(
+        {"id_user": id_user, "key": key, "expiration": {"$gte": datetime.datetime.utcnow()}}) is not None
 
 
 def reset_password_with_forget_key(id_user, password, key):

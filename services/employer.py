@@ -27,8 +27,8 @@ def list_employer(name, page):
 def list_employer_admin(name, page):
     request = [{"$match": {"name": {'$regex': name, '$options': 'i'}}},
                {"$sort": {"_id": 1}},
-               {"$skip": page * 10},
-               {"$limit": 10},
+               {"$skip": page * 8},
+               {"$limit": 8},
                {"$lookup": {
                    "from": "user",
                    "localField": "_id",

@@ -35,7 +35,7 @@ def get_post_of_employer(id, page):
 
 
 def count_page_my_list_post(id):
-    return math.ceil(db.post.find({"employer": id}).count()/20)
+    return math.ceil(db.post.find({"employer": id}).count() / 20)
 
 
 def recommend_post(id_user, list_showed, place):
@@ -97,7 +97,7 @@ def recommend_post(id_user, list_showed, place):
     return list(db.applicant.aggregate(db_request))
 
 
-def search_post(list_showed, place, hashtag, limit = 20):
+def search_post(list_showed, place, hashtag, limit=20):
     db_request = [{"$match": {"_id": {"$not": {"$in": list_showed}}}},
                   {"$match": {"deadline": {"$gt": datetime.datetime.utcnow()}}}]
     if place != "":
@@ -184,17 +184,17 @@ def get_all_post(list_showed, place):
 
 def get_post_info(id_post):
     post = list(db.post.aggregate([{"$match": {"_id": id_post}},
-                                 {"$lookup": {
-                                     "from": "employer",
-                                     "localField": "employer",
-                                     "foreignField": "_id",
-                                     "as": "employer"
-                                 }},
-                                 {"$unwind": "$employer"},
-                                 {"$set": {
-                                     "employer._id": {"$toString": "$employer._id"},
-                                     "_id": {"$toString": "$_id"}
-                                 }}]))
+                                   {"$lookup": {
+                                       "from": "employer",
+                                       "localField": "employer",
+                                       "foreignField": "_id",
+                                       "as": "employer"
+                                   }},
+                                   {"$unwind": "$employer"},
+                                   {"$set": {
+                                       "employer._id": {"$toString": "$employer._id"},
+                                       "_id": {"$toString": "$_id"}
+                                   }}]))
     if len(post) == 0:
         return None
     rs = post[0]
@@ -245,3 +245,97 @@ def update_post(db_post, id_post, title, description, request, benefit, place, s
 
 def delete_post_by_id(id_post):
     db.post.delete_one({"_id": id_post})
+
+
+def get_post_admin(title, page, list_hashtag, place):
+    request = [{"$match": {"title": {'$regex': title, '$options': 'i'}}},
+               {"$match": {"deadline": {"$gt": datetime.datetime.utcnow()}}}]
+
+    if place != "":
+        request += [{"$match": {"place": place}}]
+
+    request += [{"$unwind": "$hashtag"},
+                {"$group": {
+                    "_id": "$_id",
+                    "title": {"$first": "$title"},
+                    "employer": {"$first": "$employer"},
+                    "place": {"$first": "$place"},
+                    "salary": {"$first": "$salary"},
+                    "hashtag": {"$addToSet": '$hashtag'},
+                    "count_hashtag": {"$sum": 1}}
+                },
+                {"$unwind": "$hashtag"},
+                {"$match": {"hashtag": {"$in": list_hashtag}}},
+                {"$group": {
+                    "_id": "$_id",
+                    "title": {"$first": "$title"},
+                    "employer": {"$first": "$employer"},
+                    "place": {"$first": "$place"},
+                    "salary": {"$first": "$salary"},
+                    "count_hashtag": {"$first": "$count_hashtag"},
+                    "count_find": {"$sum": 1}}
+                },
+                {"$match": {"count_find": {"$eq": len(list_hashtag)}}},
+                {"$sort": {"count_find": -1, "count_hashtag": 1, "_id": -1}},
+                {"$skip": page * 8},
+                {"$limit": 8},
+                {"$lookup": {
+                    "from": "employer",
+                    "localField": "employer",
+                    "foreignField": "_id",
+                    "as": "employer"
+                }},
+                {"$lookup": {
+                    "from": "post",
+                    "localField": "_id",
+                    "foreignField": "_id",
+                    "as": "hashtag"
+                }},
+                {"$unwind": "$employer"},
+                {"$project": {
+                    "count_find": 0,
+                    "count_hashtag": 0,
+                    "salary": 0
+                }},
+                {"$unwind": "$hashtag"},
+                {"$set": {
+                    "_id": {"$toString": "$_id"},
+                    "hashtag": "$hashtag.hashtag",
+                    "employer": "$employer.name"
+                }}]
+
+    return list(db.post.aggregate(request))
+
+
+def count_get_post_admin(title, list_hashtag, place):
+    request = [{"$match": {"title": {'$regex': title, '$options': 'i'}}},
+               {"$match": {"deadline": {"$gt": datetime.datetime.utcnow()}}}]
+
+    if place != "":
+        request += [{"$match": {"place": place}}]
+
+    request += [{"$unwind": "$hashtag"},
+                {"$group": {
+                    "_id": "$_id",
+                    "title": {"$first": "$title"},
+                    "employer": {"$first": "$employer"},
+                    "place": {"$first": "$place"},
+                    "salary": {"$first": "$salary"},
+                    "hashtag": {"$addToSet": '$hashtag'},
+                    "count_hashtag": {"$sum": 1}}
+                },
+                {"$unwind": "$hashtag"},
+                {"$match": {"hashtag": {"$in": list_hashtag}}},
+                {"$group": {
+                    "_id": "$_id",
+                    "title": {"$first": "$title"},
+                    "employer": {"$first": "$employer"},
+                    "place": {"$first": "$place"},
+                    "salary": {"$first": "$salary"},
+                    "count_hashtag": {"$first": "$count_hashtag"},
+                    "count_find": {"$sum": 1}}
+                },
+                {"$match": {"count_find": {"$eq": len(list_hashtag)}}},
+                {"$count": "count_page"}]
+
+    return math.ceil(list(db.post.aggregate(request))[0]["count_page"] / 8)

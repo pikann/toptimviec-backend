@@ -14,7 +14,9 @@ from util.email import send_email
 
 
 def list_employer(name, page):
-    employers = list(db.employer.find({"name": {'$regex': name, '$options': 'i'}}, {"name": 1, "avatar": 1, "bio": 1}).sort([("_id", 1)]).skip(page * 8).limit(8))
+    employers = list(
+        db.employer.find({"name": {'$regex': name, '$options': 'i'}}, {"name": 1, "avatar": 1, "bio": 1}).sort(
+            [("_id", 1)]).skip(page * 8).limit(8))
     for employer in employers:
         employer["_id"] = str(employer["_id"])
         if len(employer["bio"]) > 100:
@@ -22,8 +24,33 @@ def list_employer(name, page):
     return employers
 
 
+def list_employer_admin(name, page):
+    request = [{"$match": {"name": {'$regex': name, '$options': 'i'}}},
+               {"$sort": {"_id": 1}},
+               {"$skip": page * 10},
+               {"$limit": 10},
+               {"$lookup": {
+                   "from": "user",
+                   "localField": "_id",
+                   "foreignField": "_id",
+                   "as": "user"
+               }},
+               {"$unwind": "$user"},
+               {"$set": {
+                   "_id": {"$toString": "$_id"},
+                   "ban": "$user.ban"
+               }},
+               {"$project": {
+                   "_id": 1,
+                   "name": 1,
+                   "ban": 1
+               }}
+               ]
+    return list(db.employer.aggregate(request))
+
+
 def count_page_list_employer(name):
-    return math.ceil(db.employer.find({"name": {'$regex': name, '$options': 'i'}}).count()/8)
+    return math.ceil(db.employer.find({"name": {'$regex': name, '$options': 'i'}}).count() / 8)
 
 
 def create_employer(email, password, name):

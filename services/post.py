@@ -254,55 +254,77 @@ def get_post_admin(title, page, list_hashtag, place):
     if place != "":
         request += [{"$match": {"place": place}}]
 
-    request += [{"$unwind": "$hashtag"},
-                {"$group": {
-                    "_id": "$_id",
-                    "title": {"$first": "$title"},
-                    "employer": {"$first": "$employer"},
-                    "place": {"$first": "$place"},
-                    "salary": {"$first": "$salary"},
-                    "hashtag": {"$addToSet": '$hashtag'},
-                    "count_hashtag": {"$sum": 1}}
-                },
-                {"$unwind": "$hashtag"},
-                {"$match": {"hashtag": {"$in": list_hashtag}}},
-                {"$group": {
-                    "_id": "$_id",
-                    "title": {"$first": "$title"},
-                    "employer": {"$first": "$employer"},
-                    "place": {"$first": "$place"},
-                    "salary": {"$first": "$salary"},
-                    "count_hashtag": {"$first": "$count_hashtag"},
-                    "count_find": {"$sum": 1}}
-                },
-                {"$match": {"count_find": {"$eq": len(list_hashtag)}}},
-                {"$sort": {"count_find": -1, "count_hashtag": 1, "_id": -1}},
-                {"$skip": page * 8},
-                {"$limit": 8},
-                {"$lookup": {
-                    "from": "employer",
-                    "localField": "employer",
-                    "foreignField": "_id",
-                    "as": "employer"
-                }},
-                {"$lookup": {
-                    "from": "post",
-                    "localField": "_id",
-                    "foreignField": "_id",
-                    "as": "hashtag"
-                }},
-                {"$unwind": "$employer"},
-                {"$project": {
-                    "count_find": 0,
-                    "count_hashtag": 0,
-                    "salary": 0
-                }},
-                {"$unwind": "$hashtag"},
-                {"$set": {
-                    "_id": {"$toString": "$_id"},
-                    "hashtag": "$hashtag.hashtag",
-                    "employer": "$employer.name"
-                }}]
+    if len(list_hashtag) > 0:
+        request += [{"$unwind": "$hashtag"},
+                    {"$group": {
+                        "_id": "$_id",
+                        "title": {"$first": "$title"},
+                        "employer": {"$first": "$employer"},
+                        "place": {"$first": "$place"},
+                        "salary": {"$first": "$salary"},
+                        "hashtag": {"$addToSet": '$hashtag'},
+                        "count_hashtag": {"$sum": 1}}
+                    },
+                    {"$unwind": "$hashtag"},
+                    {"$match": {"hashtag": {"$in": list_hashtag}}},
+                    {"$group": {
+                        "_id": "$_id",
+                        "title": {"$first": "$title"},
+                        "employer": {"$first": "$employer"},
+                        "place": {"$first": "$place"},
+                        "salary": {"$first": "$salary"},
+                        "count_hashtag": {"$first": "$count_hashtag"},
+                        "count_find": {"$sum": 1}}
+                    },
+                    {"$match": {"count_find": {"$eq": len(list_hashtag)}}},
+                    {"$sort": {"count_hashtag": 1, "_id": -1}},
+                    {"$skip": page * 8},
+                    {"$limit": 8},
+                    {"$lookup": {
+                        "from": "employer",
+                        "localField": "employer",
+                        "foreignField": "_id",
+                        "as": "employer"
+                    }},
+                    {"$lookup": {
+                        "from": "post",
+                        "localField": "_id",
+                        "foreignField": "_id",
+                        "as": "hashtag"
+                    }},
+                    {"$unwind": "$employer"},
+                    {"$project": {
+                        "count_find": 0,
+                        "count_hashtag": 0,
+                        "salary": 0
+                    }},
+                    {"$unwind": "$hashtag"},
+                    {"$set": {
+                        "_id": {"$toString": "$_id"},
+                        "hashtag": "$hashtag.hashtag",
+                        "employer": "$employer.name"
+                    }}]
+    else:
+        request += [{"$sort": {"_id": -1}},
+                    {"$skip": page * 8},
+                    {"$limit": 8},
+                    {"$project": {
+                        "_id": {"$toString": "$_id"},
+                        "title": 1,
+                        "employer": 1,
+                        "place": 1,
+                        "hashtag": 1
+                    }},
+                    {"$lookup": {
+                        "from": "employer",
+                        "localField": "employer",
+                        "foreignField": "_id",
+                        "as": "employer"
+                    }},
+                    {"$unwind": "$employer"},
+                    {"$set": {
+                        "employer": "$employer.name"
+                    }}]
 
     return list(db.post.aggregate(request))
 

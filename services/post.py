@@ -336,28 +336,30 @@ def count_get_post_admin(title, list_hashtag, place):
     if place != "":
         request += [{"$match": {"place": place}}]
 
-    request += [{"$unwind": "$hashtag"},
-                {"$group": {
-                    "_id": "$_id",
-                    "title": {"$first": "$title"},
-                    "employer": {"$first": "$employer"},
-                    "place": {"$first": "$place"},
-                    "salary": {"$first": "$salary"},
-                    "hashtag": {"$addToSet": '$hashtag'},
-                    "count_hashtag": {"$sum": 1}}
-                },
-                {"$unwind": "$hashtag"},
-                {"$match": {"hashtag": {"$in": list_hashtag}}},
-                {"$group": {
-                    "_id": "$_id",
-                    "title": {"$first": "$title"},
-                    "employer": {"$first": "$employer"},
-                    "place": {"$first": "$place"},
-                    "salary": {"$first": "$salary"},
-                    "count_hashtag": {"$first": "$count_hashtag"},
-                    "count_find": {"$sum": 1}}
-                },
-                {"$match": {"count_find": {"$eq": len(list_hashtag)}}},
-                {"$count": "count_page"}]
+    if len(list_hashtag) > 0:
+        request += [{"$unwind": "$hashtag"},
+                    {"$group": {
+                        "_id": "$_id",
+                        "title": {"$first": "$title"},
+                        "employer": {"$first": "$employer"},
+                        "place": {"$first": "$place"},
+                        "salary": {"$first": "$salary"},
+                        "hashtag": {"$addToSet": '$hashtag'},
+                        "count_hashtag": {"$sum": 1}}
+                    },
+                    {"$unwind": "$hashtag"},
+                    {"$match": {"hashtag": {"$in": list_hashtag}}},
+                    {"$group": {
+                        "_id": "$_id",
+                        "title": {"$first": "$title"},
+                        "employer": {"$first": "$employer"},
+                        "place": {"$first": "$place"},
+                        "salary": {"$first": "$salary"},
+                        "count_hashtag": {"$first": "$count_hashtag"},
+                        "count_find": {"$sum": 1}}
+                    },
+                    {"$match": {"count_find": {"$eq": len(list_hashtag)}}}]
+
+    request += [{"$count": "count_page"}]
 
     return math.ceil(list(db.post.aggregate(request))[0]["count_page"] / 8)

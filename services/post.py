@@ -362,4 +362,9 @@ def count_get_post_admin(title, list_hashtag, place):
 
     request += [{"$count": "count_page"}]
 
-    return math.ceil(list(db.post.aggregate(request))[0]["count_page"] / 8)
+    data = list(db.post.aggregate(request))
+
+    if len(data) > 0:
+        return math.ceil(data[0]["count_page"] / 8)
+    else:
+        return 0

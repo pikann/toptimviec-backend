@@ -164,10 +164,13 @@ def delete_post(id):
     if db_post is None:
         abort(404)
 
-    if db_post["employer"] != token.id_user:
+    if db_post["employer"] != token.id_user and token.role != "admin":
         abort(405)
 
-    delete_post_by_id(ObjectId(id))
+    try:
+        delete_post_by_id(ObjectId(id))
+    except:
+        abort(403)
     return "ok"
 
 

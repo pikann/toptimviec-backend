@@ -174,5 +174,99 @@ def get_list_cv_by_id_applicant(id_applicant, page):
         cv["_id"]=str(cv["_id"])
     return list_cv
 
+
 def get_number_cv_by_id_applicant(id_applicant):
     return math.ceil(db.cv.find({"applicant": id_applicant}).count() / 10)
+
+
+def get_cv_admin(name, page, list_hashtag, place):
+    request = [{"$match": {"name": {'$regex': name, '$options': 'i'}}}]
+
+    if place != "":
+        request += [{"$match": {"place": place}}]
+
+    if len(list_hashtag) > 0:
+        request += [{"$unwind": "$hashtag"},
+                    {"$group": {
+                        "_id": "$_id",
+                        "name": {"$first": "$name"},
+                        "place": {"$first": "$place"},
+                        "hashtag": {"$addToSet": '$hashtag'},
+                        "count_hashtag": {"$sum": 1}}
+                    },
+                    {"$unwind": "$hashtag"},
+                    {"$match": {"hashtag": {"$in": list_hashtag}}},
+                    {"$group": {
+                        "_id": "$_id",
+                        "name": {"$first": "$name"},
+                        "place": {"$first": "$place"},
+                        "count_hashtag": {"$first": "$count_hashtag"},
+                        "count_find": {"$sum": 1}}
+                    },
+                    {"$match": {"count_find": {"$eq": len(list_hashtag)}}},
+                    {"$sort": {"count_hashtag": 1, "_id": -1}},
+                    {"$skip": page * 8},
+                    {"$limit": 8},
+                    {"$lookup": {
+                        "from": "cv",
+                        "localField": "_id",
+                        "foreignField": "_id",
+                        "as": "hashtag"
+                    }},
+                    {"$project": {
+                        "count_find": 0,
+                        "count_hashtag": 0
+                    }},
+                    {"$unwind": "$hashtag"},
+                    {"$set": {
+                        "_id": {"$toString": "$_id"},
+                        "hashtag": "$hashtag.hashtag"
+                    }}]
+    else:
+        request += [{"$sort": {"_id": -1}},
+                    {"$skip": page * 8},
+                    {"$limit": 8},
+                    {"$project": {
+                        "_id": {"$toString": "$_id"},
+                        "name": 1,
+                        "place": 1,
+                        "hashtag": 1
+                    }}]
+
+    return list(db.cv.aggregate(request))
+
+
+def count_get_cv_admin(name, list_hashtag, place):
+    request = [{"$match": {"name": {'$regex': name, '$options': 'i'}}}]
+
+    if place != "":
+        request += [{"$match": {"place": place}}]
+
+    if len(list_hashtag) > 0:
+        request += [{"$unwind": "$hashtag"},
+                    {"$group": {
+                        "_id": "$_id",
+                        "name": {"$first": "$name"},
+                        "place": {"$first": "$place"},
+                        "hashtag": {"$addToSet": '$hashtag'},
+                        "count_hashtag": {"$sum": 1}}
+                    },
+                    {"$unwind": "$hashtag"},
+                    {"$match": {"hashtag": {"$in": list_hashtag}}},
+                    {"$group": {
+                        "_id": "$_id",
+                        "name": {"$first": "$name"},
+                        "place": {"$first": "$place"},
+                        "count_hashtag": {"$first": "$count_hashtag"},
+                        "count_find": {"$sum": 1}}
+                    },
+                    {"$match": {"count_find": {"$eq": len(list_hashtag)}}}]
+
+    request += [{"$count": "count_page"}]
+
+    data = list(db.cv.aggregate(request))
+
+    if len(data) > 0:
+        return math.ceil(data[0]["count_page"] / 8)
+    else:
+        return 0

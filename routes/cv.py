@@ -162,7 +162,7 @@ def cv_delete(id):
     if db_cv is None:
         abort(404)
 
-    if db_cv["applicant"] != token.id_user:
+    if db_cv["applicant"] != token.id_user and token.role != "admin":
         abort(405)
 
     try:

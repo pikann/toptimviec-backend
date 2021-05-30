@@ -2,7 +2,7 @@ from flask import request, abort
 from routes import bp
 from services.auth import token_auth
 from services.admin import count_user, count_cv, count_post, count_post_unexpired, count_employer, count_applicant
-from services.employer import list_employer_admin
+from services.employer import list_employer_admin, count_list_employer_admin
 from services.post import get_post_admin, count_get_post_admin
 from services.global_data import check_place, check_list_hashtag
 from services.cv import get_cv_admin, count_get_cv_admin
@@ -30,15 +30,32 @@ def get_general_infomation():
 @bp.route('/admin/employer', methods=['GET'])
 @token_auth.login_required(role="admin")
 def get_list_employer_admin():
-    global page, name
+    global page, name, ban
     try:
         name = str(request.args.get('name', default=""))
         page = int(request.args.get('page', default=0))
+        ban = True if request.args.get('ban', default="false") == "true" else False
     except:
         abort(400)
 
     try:
-        return {"list_employer": list_employer_admin(name, page)}
+        return {"list_employer": list_employer_admin(name, page, ban)}
+    except:
+        abort(403)
+
+
+@bp.route('/admin/employer/count', methods=['GET'])
+@token_auth.login_required(role="admin")
+def count_get_list_employer_admin():
+    global name, ban
+    try:
+        name = str(request.args.get('name', default=""))
+        ban = True if request.args.get('ban', default="false") == "true" else False
+    except:
+        abort(400)
+
+    try:
+        return {"count_page": count_list_employer_admin(name, ban)}
     except:
         abort(403)
 

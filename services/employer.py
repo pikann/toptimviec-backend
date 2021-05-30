@@ -24,29 +24,55 @@ def list_employer(name, page):
     return employers
 
 
-def list_employer_admin(name, page):
+def list_employer_admin(name, page, ban):
     request = [{"$match": {"name": {'$regex': name, '$options': 'i'}}},
-               {"$sort": {"_id": 1}},
-               {"$skip": page * 8},
-               {"$limit": 8},
                {"$lookup": {
                    "from": "user",
                    "localField": "_id",
                    "foreignField": "_id",
                    "as": "user"
                }},
-               {"$unwind": "$user"},
-               {"$set": {
-                   "_id": {"$toString": "$_id"},
-                   "ban": "$user.ban"
-               }},
-               {"$project": {
-                   "_id": 1,
-                   "name": 1,
-                   "ban": 1
-               }}
-               ]
+               {"$unwind": "$user"}]
+
+    if ban:
+        request += [{"$match": {"user.ban": True}}]
+
+    request += [{"$sort": {"_id": 1}},
+                {"$skip": page * 8},
+                {"$limit": 8},
+                {"$set": {
+                    "_id": {"$toString": "$_id"},
+                    "ban": "$user.ban"
+                }},
+                {"$project": {
+                    "_id": 1,
+                    "name": 1,
+                    "ban": 1
+                }}]
     return list(db.employer.aggregate(request))
+
+
+def count_list_employer_admin(name, ban):
+    request = [{"$match": {"name": {'$regex': name, '$options': 'i'}}},
+               {"$lookup": {
+                   "from": "user",
+                   "localField": "_id",
+                   "foreignField": "_id",
+                   "as": "user"
+               }},
+               {"$unwind": "$user"}]
+
+    if ban:
+        request += [{"$match": {"user.ban": True}}]
+
+    request += [{"$count": "count_page"}]
+
+    data = list(db.employer.aggregate(request))
+
+    if len(data) > 0:
+        return math.ceil(data[0]["count_page"] / 8)
+    else:
+        return 0
 
 
 def count_page_list_employer(name):

@@ -89,7 +89,7 @@ def post_post():
         abort(400)
 
     try:
-        deadline = datetime.datetime.strptime(rq["deadline"], '%d/%m/%Y')
+        deadline = datetime.datetime.strptime(rq["deadline"], '%Y-%m-%d')
     except:
         abort(400)
 
@@ -139,7 +139,7 @@ def put_post(id):
         abort(400)
 
     try:
-        deadline = datetime.datetime.strptime(rq["deadline"], '%d/%m/%Y')
+        deadline = datetime.datetime.strptime(rq["deadline"], '%Y-%m-%d')
     except:
         abort(400)
 

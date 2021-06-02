@@ -122,7 +122,7 @@ def check_content_block(contents):
     return True
 
 
-def create_cv(id_user, name, gender, avatar, position, dob, address, email, phone, place, skill, hashtag, content, interests, find_job):
+def create_cv(id_user, name, gender, avatar, position, dob, address, email, phone, place, skill, hashtag, content, interests):
     cv = CV(applicant=id_user)
     cv.name = name
     cv.gender = gender
@@ -137,14 +137,13 @@ def create_cv(id_user, name, gender, avatar, position, dob, address, email, phon
     cv.hashtag = hashtag
     cv.content = content
     cv.interests = interests
-    cv.find_job = find_job
 
     db.cv.insert_one(cv.__dict__)
 
     return cv.id()
 
 
-def update_cv(id_cv, db_cv, name, gender, avatar, position, dob, address, email, phone, place, skill, hashtag, content, interests, find_job):
+def update_cv(id_cv, db_cv, name, gender, avatar, position, dob, address, email, phone, place, skill, hashtag, content, interests):
     cv = CV(dict=db_cv)
     cv.name = name
     cv.gender = gender
@@ -159,7 +158,6 @@ def update_cv(id_cv, db_cv, name, gender, avatar, position, dob, address, email,
     cv.hashtag = hashtag
     cv.content = content
     cv.interests = interests
-    cv.find_job = find_job
 
     db.cv.update_one({"_id": id_cv}, {"$set": cv.__dict__})
 

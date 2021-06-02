@@ -62,13 +62,13 @@ def post_cv():
     if not rq or not 'name' in rq or not 'gender' in rq or not 'avatar' in rq or \
             not 'position' in rq or not 'dob' in rq or not 'address' in rq or \
             not 'email' in rq or not 'phone' in rq or not 'place' in rq or not 'skill' in rq or \
-            not 'hashtag' in rq or not 'content' in rq or not 'interests' in rq or not 'find_job' in rq:
+            not 'hashtag' in rq or not 'content' in rq or not 'interests' in rq:
         abort(400)
     if rq["name"].__class__ != str or rq["gender"].__class__ != bool or rq["avatar"].__class__ != str or rq[
         "position"].__class__ != str or rq["dob"].__class__ != str or rq["address"].__class__ != str or rq[
         "email"].__class__ != str or rq["phone"].__class__ != str or rq["place"].__class__ != str or rq[
         "skill"].__class__ != list or rq["hashtag"].__class__ != list or rq["content"].__class__ != list or rq[
-        "interests"].__class__ != list or rq["find_job"].__class__ != bool:
+        "interests"].__class__ != list:
         abort(400)
     hashtag = check_list_hashtag(rq["hashtag"])
     if check_place(rq["place"]) == "":
@@ -87,7 +87,7 @@ def post_cv():
     except:
         abort(400, 'Error 400: Day of birth is not in the correct format')
     try:
-        id_cv=create_cv(token.id_user, rq["name"], rq["gender"], rq["avatar"], rq["position"], dob, rq["address"], rq["email"], rq["phone"], rq["place"], rq["skill"], hashtag, rq["content"], rq["interests"], rq["find_job"])
+        id_cv=create_cv(token.id_user, rq["name"], rq["gender"], rq["avatar"], rq["position"], dob, rq["address"], rq["email"], rq["phone"], rq["place"], rq["skill"], hashtag, rq["content"], rq["interests"])
     except:
         abort(403)
 
@@ -116,13 +116,13 @@ def put_cv(id):
     if not rq or not 'name' in rq or not 'gender' in rq or not 'avatar' in rq or \
             not 'position' in rq or not 'dob' in rq or not 'address' in rq or \
             not 'email' in rq or not 'phone' in rq or not 'place' in rq or not 'skill' in rq or \
-            not 'hashtag' in rq or not 'content' in rq or not 'interests' in rq or not 'find_job' in rq:
+            not 'hashtag' in rq or not 'content' in rq or not 'interests' in rq:
         abort(400)
     if rq["name"].__class__ != str or rq["gender"].__class__ != bool or rq["avatar"].__class__ != str or rq[
         "position"].__class__ != str or rq["dob"].__class__ != str or rq["address"].__class__ != str or rq[
         "email"].__class__ != str or rq["phone"].__class__ != str or rq["place"].__class__ != str or rq[
         "skill"].__class__ != list or rq["hashtag"].__class__ != list or rq["content"].__class__ != list or rq[
-        "interests"].__class__ != list or rq["find_job"].__class__ != bool:
+        "interests"].__class__ != list:
         abort(400)
     hashtag = check_list_hashtag(rq["hashtag"])
     if check_place(rq["place"]) == "":
@@ -142,7 +142,7 @@ def put_cv(id):
         abort(400, 'Error 400: Day of birth is not in the correct format')
 
     try:
-        update_cv(ObjectId(id), db_cv, rq["name"], rq["gender"], rq["avatar"], rq["position"], dob, rq["address"], rq["email"], rq["phone"], rq["place"], rq["skill"], hashtag, rq["content"], rq["interests"], rq["find_job"])
+        update_cv(ObjectId(id), db_cv, rq["name"], rq["gender"], rq["avatar"], rq["position"], dob, rq["address"], rq["email"], rq["phone"], rq["place"], rq["skill"], hashtag, rq["content"], rq["interests"])
     except:
         abort(403)
 

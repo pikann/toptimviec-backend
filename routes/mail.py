@@ -18,6 +18,8 @@ def send_mail():
         "attach_post"].__class__ != str or rq["attach_cv"].__class__ != str:
         abort(400)
     receiver = [ObjectId(i) for i in rq["receiver"]]
+    if len(receiver) == 0:
+        abort(400)
     if rq["attach_post"] != "":
         attach_post = ObjectId(rq["attach_post"])
     else:

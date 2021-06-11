@@ -83,7 +83,7 @@ def post_cv():
         if interest.__class__ != str:
             abort(400)
     try:
-        dob = datetime.datetime.strptime(rq["dob"], '%d/%m/%Y')
+        dob = datetime.datetime.strptime(rq["dob"], '%Y-%m-%d')
     except:
         abort(400, 'Error 400: Day of birth is not in the correct format')
     try:
@@ -137,7 +137,7 @@ def put_cv(id):
         if interest.__class__ != str:
             abort(400)
     try:
-        dob = datetime.datetime.strptime(rq["dob"], '%d/%m/%Y')
+        dob = datetime.datetime.strptime(rq["dob"], '%Y-%m-%d')
     except:
         abort(400, 'Error 400: Day of birth is not in the correct format')
 

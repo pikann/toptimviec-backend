@@ -64,7 +64,7 @@ def get_post(id):
     if g.current_token is not None:
         token = g.current_token
         if token.role == "applicant":
-            threading.Thread(target=learn_applicant_hashtag, args=(token.id_user, post[0]["hashtag"],)).start()
+            threading.Thread(target=learn_applicant_hashtag, args=(token.id_user, post["hashtag"],)).start()
         elif token.role == "employer":
             if str(token.id_user) != post["employer"]["_id"]:
                 abort(404)

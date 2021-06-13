@@ -51,7 +51,7 @@ def get_list_post():
 
 
 @bp.route('/post/<id>', methods=['GET'])
-@token_auth.login_required(optional=True, role="applicant")
+@token_auth.login_required(optional=True)
 def get_post(id):
     global post
     try:
@@ -60,8 +60,15 @@ def get_post(id):
         abort(403)
     if post is None:
         abort(404)
+
     if g.current_token is not None:
-        threading.Thread(target=learn_applicant_hashtag, args=(g.current_token.id_user, post[0]["hashtag"],)).start()
+        token = g.current_token
+        if token.role == "applicant":
+            threading.Thread(target=learn_applicant_hashtag, args=(token.id_user, post[0]["hashtag"],)).start()
+        elif token.role == "employer":
+            if str(token.id_user) != post["employer"]["_id"]:
+                abort(404)
+
     return {"post": post}
 
 

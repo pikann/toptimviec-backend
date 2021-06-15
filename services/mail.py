@@ -243,7 +243,7 @@ def get_mail_info(mail):
             receiver = receiver["employer"]
             receiver["role"] = "employer"
         else:
-            return None
+            continue
         receiver["_id"] = str(receiver["_id"])
         receivers.append(receiver)
 
